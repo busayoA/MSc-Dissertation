@@ -5,7 +5,3 @@ def sort(myList):
                 temp = myList[j-1]
                 myList[j-1] = myList[j]
                 myList[j] = temp
-    print(myList)
-
-# myList = [9, 2, 4, 1, 4]
-# sort(myList) # TESTING

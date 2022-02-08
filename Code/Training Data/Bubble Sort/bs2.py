@@ -8,7 +8,3 @@ def sort(myList):
                     myList[j + 1] = temp
                     swaps += 1
         sortedEnd -= 1
-    print(myList)
-    
-# myList = [9, 2, 4, 1, 4]
-# sort(myList) # TESTING
