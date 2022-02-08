@@ -1,8 +1,13 @@
-def sort(myList):
+def sort(myList, minimum, maximum):
+    
+    if minimum == len(myList-1):
+        return
+    if maximum== len(myList):
+        sort(myList, minimum+1, minimum+2)
+        return
+    if myList[minimum] > myList[maximum]:
+        temp = myList[minimum]
+        myList[minimum] = myList[maximum]
+        myList[maximum] = temp
 
-
-
-    print(myList)
-
-# myList = [9, 2, 4, 1, 4]
-# sort(myList) # TESTING
+    sort(myList, minimum, maximum+1)

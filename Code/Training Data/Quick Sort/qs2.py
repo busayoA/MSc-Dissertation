@@ -1,8 +1,21 @@
-def sort(myList):
+# Source: https://gist.github.com/wahidari/ec95acd2ea13007915ae80d4b85e24e7 
 
+def partition(arr,low,high): 
+    i = ( low-1 )        
+    pivot = arr[high]     
+  
+    for j in range(low , high): 
+        if   arr[j] <= pivot: 
+            i = i+1 
+            arr[i],arr[j] = arr[j],arr[i] 
+  
+    arr[i+1],arr[high] = arr[high],arr[i+1] 
+    return ( i+1 ) 
 
+def quickSort(arr,low,high): 
+    if low < high: 
 
-    print(myList)
+        pi = partition(arr,low,high) 
 
-# myList = [9, 2, 4, 1, 4]
-# sort(myList) # TESTING
+        quickSort(arr, low, pi-1) 
+        quickSort(arr, pi+1, high)

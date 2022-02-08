@@ -1,43 +1,35 @@
-def sort(myList):
-    temp = []
-    mergeSort(myList, temp,  0,  len(myList)-1)
-    print(myList)
-    
-def mergeSort(myList, temp, lBound, uBound):
-    if (lBound < uBound):
-        center = (lBound + uBound) // 2
-        mergeSort(myList, temp, lBound, center)
-        mergeSort(myList, temp, center + 1, uBound)
-        merge(myList, temp, lBound, center + 1, uBound)
+def merge(myList, lBound, middle, uBound):
+    temp1 = middle - lBound + 1
+    temp2 = uBound - middle
+    leftList, rightList = [0] * (temp1), [0] * (temp2)
 
-def merge(myList, temp, lBound, uBound, uBoundEnd):
-    lBoundEnd = uBound - 1
-    index = lBound
-    count = uBoundEnd - lBound + 1
-    
-    while lBound <= lBoundEnd and uBound <= uBoundEnd:
-        if myList[lBound] <= myList[uBound]:
-            temp.append(myList[lBound])
-            index += 1
-            lBound += 1
+    leftList = [myList[lBound+i] for i in range(0, temp1)]
+    rightList = [myList[middle+i+1] for i in range(0, temp2)]
+
+    start, end, partition = 0, 0, lBound
+
+    while start < temp1 and end < temp2:
+        if leftList[start] <= rightList[end]:
+            myList[partition] = leftList[start]
+            start += 1
         else:
-            temp.append(myList[uBound])
-            index += 1
-            uBound += 1
-    
-    while lBound <= lBoundEnd:
-        temp.append(myList[lBound])
-        index += 1
-        lBound += 1
+            myList[partition] = rightList[end]
+            end += 1
+        partition += 1
 
-    
-    while uBound <= uBoundEnd:
-        temp.append(myList[uBound])
-        index += 1
-        uBound += 1
-        
-    for i in range(uBoundEnd, 0, -11):
-        myList[uBoundEnd] = temp[uBoundEnd]
+    while start < temp1:
+        myList[partition] = leftList[start]
+        start += 1
+        partition += 1
 
-myList = [9, 2, 4, 1, 4]
-sort(myList) # TESTING
+    while end < temp2:
+        myList[partition] = rightList[end]
+        end += 1
+        partition += 1
+ 
+def sort(myList, lowerBound, upperBound):
+    if lowerBound < upperBound:
+        mid = lowerBound + (upperBound - lowerBound)//2
+        sort(myList, lowerBound, mid)
+        sort(myList, mid+1, upperBound)
+        merge(myList, lowerBound, mid, upperBound)

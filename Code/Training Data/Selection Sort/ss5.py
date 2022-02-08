@@ -1,8 +1,9 @@
+# Source: https://www.geeksforgeeks.org/python-program-for-selection-sort/
+
 def sort(myList):
-
-
-
-    print(myList)
-
-# myList = [9, 2, 4, 1, 4]
-# sort(myList) # TESTING
+    for i in range(len(myList)):
+        min_idx = i
+        for j in range(i+1, len(myList)):
+            if myList[min_idx] > myList[j]:
+                min_idx = j  
+        myList[i], myList[min_idx] = myList[min_idx], myList[i]
