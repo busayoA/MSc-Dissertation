@@ -1,14 +1,14 @@
-def sort(myList):
+def sortList(entList):
     minimum, minimumIndex = 0, 0
-    for i in range(0, len(myList)):
-        minimum = myList[i]
+    for i in range(0, len(entList)):
+        minimum = entList[i]
         minimumIndex = i
 
-        for j in range(i+1, len(myList)):
-            if minimum > myList[j]:
-                minimum = myList[j]
+        for j in range(i+1, len(entList)):
+            if minimum > entList[j]:
+                minimum = entList[j]
                 minimumIndex = j
             
             if minimumIndex is not i:
-                myList[minimumIndex] = myList[i]
-                myList[i] = minimum
+                entList[minimumIndex] = entList[i]
+                entList[i] = minimum

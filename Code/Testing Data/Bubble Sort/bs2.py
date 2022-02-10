@@ -1,11 +1,11 @@
-def sort(myList): 
-    for i in range (len(myList), 0, -1):
-        for j in range (0, len(myList)-1, 1):
+def bubble(intList): 
+    for i in range (len(intList), 0, -1):
+        for j in range (0, len(intList)-1, 1):
             temp = j + 1
-            if myList[j] > myList[temp]:
-                swap(j, temp, myList)
+            if intList[j] > intList[temp]:
+                swap(j, temp, intList)
 
-def swap(j, temp, myList):
-    tempIndex = myList[i]
-    myList[j] = myList[temp]
-    myList[temp] = tempIndex
+def swap(j, temp, intList):
+    tempIndex = intList[i]
+    intList[j] = intList[temp]
+    intList[temp] = tempIndex

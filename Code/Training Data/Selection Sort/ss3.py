@@ -1,4 +1,4 @@
-def sort(myList, minimum, maximum):
+def sorting(myList, minimum, maximum):
     
     if minimum == len(myList-1):
         return

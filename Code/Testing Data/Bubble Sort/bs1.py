@@ -1,4 +1,4 @@
-def sort(myList):
+def doBubbleSort(myList):
     print(myList)
     temp = 0
     while len(myList) > 0:

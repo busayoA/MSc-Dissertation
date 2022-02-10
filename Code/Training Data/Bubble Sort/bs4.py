@@ -1,4 +1,4 @@
-def sort(myList):
+def sortSort(myList):
     for i in range(len(myList)):
         for j in range(len(myList)-1-i):
             if myList[j] > myList[j+1]:

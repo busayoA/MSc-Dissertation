@@ -1,10 +1,10 @@
-def sort(myList):
+def bSort(array):
     swap = True
     while swap is True:
         swap = False
-        for i in range(len(myList)-1):
-            if myList[i] > myList[i+1]:
+        for i in range(len(array)-1):
+            if array[i] > array[i+1]:
                 swap = True
-                temp = myList[i]
-                myList[i] = myList[i+1]
-                myList[i+1] = temp
+                temp = array[i]
+                array[i] = array[i+1]
+                array[i+1] = temp
