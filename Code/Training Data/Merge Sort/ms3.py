@@ -1,25 +1,25 @@
-def sort(myList, start, end):
+def sort(arr, start, end):
     if start < end:
         middle = start + (end - start) // 2
-        sort(myList, start, middle)
-        sort(myList, middle + 1, end)
-        merge(myList, start, middle, end)
+        sort(arr, start, middle)
+        sort(arr, middle + 1, end)
+        merge(arr, start, middle, end)
 
-def merge(myList, start, middle, end):
-    leftList = [(myList[start+i]) for i in range(0, middle-start+1)]
-    rightList = [myList[middle+i+1] for i in range(0, end-middle)]
+def merge(arr, start, middle, end):
+    leftList = [(arr[start+i]) for i in range(0, middle-start+1)]
+    rightList = [arr[middle+i+1] for i in range(0, end-middle)]
 
     left, right = 0, 0
     for k in range(start, end+1):
         if left == len(leftList):
-            myList[k] = rightList[right]
+            arr[k] = rightList[right]
             right += 1
         elif right == len(rightList):
-            myList[k] = leftList[left]
+            arr[k] = leftList[left]
             left += 1
         elif leftList[left] <= rightList[right]:
-            myList[k] = leftList[left]
+            arr[k] = leftList[left]
             left += 1
         else:
-            myList[k] = rightList[right]
+            arr[k] = rightList[right]
             right += 1
