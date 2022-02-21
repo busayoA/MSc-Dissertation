@@ -1,0 +1,2 @@
+qs1.py: https://gist.github.com/mailpraveens/6799264
+
