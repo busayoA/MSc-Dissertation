@@ -4,9 +4,10 @@ import tensorflow as tf
 import numpy as np
 
 class RecurrentNeuralNetwork:
-    def __init__(self, epochs, learningRate, values):
+    def __init__(self, epochs, learningRate, batchSize, values):
         self.epochs = epochs
         self.learningRate = learningRate
+        self.batchSize = batchSize
         self.values = values
         self.layerCount = len(values)
         self.hiddenLayerCount = len(values)-2
@@ -26,8 +27,10 @@ class RecurrentNeuralNetwork:
         for i in range(1, self.layerCount):
             self.parameterCount += self.weights[i].shape[0] * self.weights[i].shape[1]
             self.parameterCount += self.bias[i].shape[0]
+
         print(self.featureCount, "features,", self.classCount, "classes,", self.parameterCount, "parameters, and",
             self.layerCount-1, "hidden layers", "\n")
+
         for i in range(1, self.layerCount-1):
             print('Hidden layer {}:,'.format(i), '{} neurons'.format(self.values[i]))
 
@@ -39,8 +42,10 @@ class RecurrentNeuralNetwork:
             self.activationValues.append(self.bias[i] + (self.weights[i].shape[0] * self.values[i]))
         return self.activationValues
 
+
     def transferActivation(self, activationValue):
-        return (1.0/ (1.0 * exp(activationValue)))
+        return (1.0/ (1.0 * exp(-activationValue)))
+
 
     def forwardPass(self, weights):
         weights = tf.convert_to_tensor(weights, dtype=tf.float32)
@@ -52,20 +57,28 @@ class RecurrentNeuralNetwork:
                 weights = multWeights
         return weights
 
-    def forwardPassOne(self, values):
+
+    def feedForward(self, values):
         pass
 
-    def backwardPass(self):
-        pass
 
     def computeLoss(self):
         pass
+    
 
-    def updateParameters(self):
+    def updateWeights(self):
+        for i in range(1, self.layerCount):
+            self.weights[i] = self
+            self.bias[i] = self
+
+
+    def backwardPropagation(self):
         pass
 
-    def trainModel(self):
-        pass
+
+    def trainModel(self, x_train, y_train, x_test, y_test, epochs, learningRate):
+        self.stepsPerEpoch = int(x_train.shape[0]/self.batchSize)
+
 
     def makePrediction(self):
         pass
