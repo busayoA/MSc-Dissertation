@@ -1,5 +1,3 @@
-#!/usr/local/bin/python3
-
 #Converts the source code files to txt files for processing in the RNN and DFFN
 import os
 
