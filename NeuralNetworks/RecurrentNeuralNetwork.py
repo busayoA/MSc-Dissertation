@@ -13,10 +13,8 @@ class RecurrentNeuralNetwork:
         self.hiddenLayerCount = len(values)-2
         self.featureCount = values[0]
         self.classCount = values[-1]
-        self.activationValues = []
         self.parameterCount = 0
-        self.weights = {}
-        self.bias = {}
+        self.weights, self.weightErrors, self.bias, self.biasErrors = {}, {}, {}, {}
 
         # Set up the model based on the number of layers (minus the input layer):
         for i in range(1, self.layerCount):
@@ -37,17 +35,7 @@ class RecurrentNeuralNetwork:
         # print(self.bias)
 
 
-    def activationFunction(self):
-        for i in range(1, self.layerCount):
-            self.activationValues.append(self.bias[i] + (self.weights[i].shape[0] * self.values[i]))
-        return self.activationValues
-
-
-    def transferActivation(self, activationValue):
-        return (1.0/ (1.0 * exp(-activationValue)))
-
-
-    def forwardPass(self, weights):
+    def feedForward(self, weights):
         weights = tf.convert_to_tensor(weights, dtype=tf.float32)
         for i in range(1, self.layerCount):
             multWeights = tf.matmul(weights, tf.transpose(self.weights[i])) + tf.transpose(self.bias[i])
@@ -56,24 +44,17 @@ class RecurrentNeuralNetwork:
             else:
                 weights = multWeights
         return weights
-
-
-    def feedForward(self, values):
-        pass
-
-
-    def computeLoss(self):
-        pass
     
 
-    def updateWeights(self):
+    def backPropagateWeights(self, learningRate):
+        #carry out back propagation on the weights and biases and update the weights
         for i in range(1, self.layerCount):
-            self.weights[i] = self
-            self.bias[i] = self
+            self.weights[i] = self.weights[i].assign_sub(learningRate * self.weightErrors[i])
+            self.bias[i] = self.bias[i].assign_sub(learningRate * self.biasErrors[i])
 
 
-    def backwardPropagation(self):
-        pass
+    def computeLoss(self, xValues, yValues):
+        return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(yValues, xValues))
 
 
     def trainModel(self, x_train, y_train, x_test, y_test, epochs, learningRate):
