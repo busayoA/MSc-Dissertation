@@ -3,6 +3,7 @@ from turtle import forward
 from cv2 import exp
 import tensorflow as tf
 import numpy as np
+from torch import reshape
 
 class RecurrentNeuralNetwork:
     def __init__(self, epochs, learningRate, batchSize, values):
@@ -50,13 +51,12 @@ class RecurrentNeuralNetwork:
     def backPropagateWeights(self):
         #carry out back propagation on the weights and biases and update the weights
         for i in range(1, self.layerCount):
-            # print(self.weightErrors[i])
-            self.weights[i] = self.weights[i].assign_sub(self.learningRate * self.weightErrors[i])
-            self.bias[i] = self.bias[i].assign_sub(self.learningRate * self.biasErrors[i])
+            self.weights[i] = self.transferDerivatives(self.weights[i])
+            self.bias[i] = self.transferDerivatives(self.bias[i])
 
 
     def computeLoss(self, xValues, yValues):
-        return (xValues - yValues) * self.transferDerivatives(xValues)
+        return self.transferDerivatives(xValues)
 
     def transferDerivatives(self, weights):
         return weights * (1.0 - weights)
@@ -68,17 +68,13 @@ class RecurrentNeuralNetwork:
     def trainModelByBatch(self, xValues, yValues):
         xValues = tf.convert_to_tensor(xValues, dtype=tf.float32)
         yValues = tf.convert_to_tensor(yValues, dtype=tf.float32)
-        with tf.GradientTape(persistent=True) as tape:
-            forwardXValues = self.feedForward(xValues)
-            loss = self.computeLoss(forwardXValues, yValues)
-        for i in range(1, self.layerCount):
-            self.weightErrors[i] = tape.gradient(loss, self.weights[i])
-            self.biasErrors[i] = tape.gradient(loss, self.bias[i])
-        del tape
+
+        forwardXValues = self.feedForward(xValues)
+        loss = self.computeLoss(forwardXValues, yValues)
 
         self.backPropagateWeights()
         
-        return loss.numpy()
+        return loss
 
     def trainModel(self,  x_train, y_train, x_test, y_test, stepsPerEpoch):
         self.stepsPerEpoch = stepsPerEpoch
@@ -87,9 +83,9 @@ class RecurrentNeuralNetwork:
         for i in range(0, self.epochs):
             trainingLoss = 0.
             print('Epoch {}'.format(i), end='.')
-            for i in range(0, stepsPerEpoch):
-                x_batch = x_train[i*self.batchSize:(i+1)*self.batchSize]
-                y_batch = y_train[i*self.batchSize:(i+1)*self.batchSize]
+            for j in range(0, stepsPerEpoch):
+                x_batch = x_train[j*self.batchSize:(j+1)*self.batchSize]
+                y_batch = y_train[j*self.batchSize:(j+1)*self.batchSize]
                 batch_loss = self.trainModelByBatch(x_batch, y_batch)
                 trainingLoss += batch_loss
                 
