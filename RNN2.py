@@ -3,6 +3,7 @@ import math
 import random
 import numpy as np
 import readFiles as RF, preTraining as PT
+from scipy.special import logsumexp
 
 class RNN2():
     def __init__(self, inputCount, hiddenCount, outputCount):
@@ -15,15 +16,12 @@ class RNN2():
         self.outputLayer = [{'weights':[random.random() for i in range(hiddenCount + 1)]} for i in range(outputCount)]
         self.layers.append(self.outputLayer)
 
-        print(self.layers)
-
     def activateWeights(self, weights, values):
         activationValue = weights[-1]
         for i in range(len(weights)-1):
-            if len(values)-1 < i:
-                activationValue += weights[i] 
-            else:
-                activationValue += weights[i] * values[i]
+            activationValue += weights[i] 
+            # else:
+            #     activationValue += weights[i] * values[i]
 
         return activationValue
 
@@ -31,7 +29,12 @@ class RNN2():
         return 1.0 / (1.0 + math.exp(-activationValue))
 
     def transferFunction(self, outputValue):
-        return outputValue * (1.0 - outputValue)
+        value = 0.
+        try:
+            value = outputValue * (1.0 - outputValue)
+        except RuntimeWarning:
+            value = outputValue
+        return value
 
     def forwardPass(self, row):
         values = row
@@ -69,7 +72,7 @@ class RNN2():
                 values = [unit['output'] for unit in self.layers[i - 1]]
             for unit in self.layers[i]:
                 for j in range(len(values)):
-                    unit['weights'][j] -= learningRate * unit['delta'] * values[j]
+                    unit['weights'][j] -= learningRate  * values[j]
                 unit['weights'][-1] -= learningRate * unit['delta']
 
     def train(self, x_train, learningRate, epochs, outputCount):
@@ -78,33 +81,46 @@ class RNN2():
             for row in x_train:
                 output = self.forwardPass(row)
                 expected = [0 for i in range(outputCount)]
-                expected[row[-1]] = 1
+                k = np.int(row[-1])
+                expected[k] = 1
                 error += sum([(expected[i]-output[i])**2 for i in range(len(expected))])
                 self.backwardPass(expected)
                 self.updateParameters(row, learningRate)
+            print('>epoch=%d, lrate=%.3f, error=%.3f' % (epoch, learningRate, error))
+
+    def predict(self, row):
+        outputs = self.forwardPass(row)
+        return outputs.index(max(outputs))
 
 
-a, b, c, d = (RF.createTrainTestData())
+a, b, c, d = RF.createTrainTestData()
 xTrainUntagged = PT.createEmbeddings(a)
 xTestUntagged = PT.createEmbeddings(c)
+
+xTrainUntagged = np.reshape(xTrainUntagged, (xTrainUntagged.shape[0], len(xTrainUntagged[0])))/255.
+xTestUntagged =  np.reshape(xTestUntagged, (xTestUntagged.shape[0], len(xTestUntagged[0])))/255.
+
 
 x_train = [0] * len(xTrainUntagged)
 x_test = [0] * len(xTestUntagged)
 
 
 for i in range(len(xTrainUntagged)):
-    x_train[i] = np.append(xTrainUntagged[i], b[i])
-    print(x_train[i])
+    K = np.int(b[i])
+    x_train[i] = np.append(xTrainUntagged[i], K)
+
+   
+# print(x_train)
 
 x_train = np.array(x_train)
-# print(x_train)
+
 
 for i in range(len(xTestUntagged)):
     x_test[i] = np.append(xTestUntagged[i], d[i])
-    print(x_test[i])
+    
 
 x_test = np.array(x_test)
-# print(x_test)
+
 
 
 # layers = [[{'output': 0.7105668883115941, 'weights': [0.13436424411240122, 0.8474337369372327, 0.763774618976614]}], [{'output': 0.6213859615555266, 'weights': [0.2550690257394217, 0.49543508709194095]}, {'output': 0.6573693455986976, 'weights': [0.4494910647887381, 0.651592972722763]}]]
@@ -115,5 +131,8 @@ x_test = np.array(x_test)
 
 inputCount = len(x_train[0]-1)
 outputCount = len(set([row[-1] for row in x_train]))
-rnn = RNN2(inputCount, 2, outputCount)
-rnn.train(x_train, 0.3, 20, outputCount)
+rnn = RNN2(inputCount, 3, outputCount)
+rnn.train(x_train, 0.5, 5, outputCount)
+# for row in x_train:
+#     prediction = rnn.predict(row)
+#     print('Expected=%d, Got=%d' % (row[-1], prediction))

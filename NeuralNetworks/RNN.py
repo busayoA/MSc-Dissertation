@@ -28,11 +28,8 @@ class RNN:
     def forward_pass(self, A):
         A = tf.convert_to_tensor(A, dtype=tf.float32)
         for i in range(1, self.L):
-            activation = A * tf.reduce_mean(self.W[i])
-            activation += tf.reduce_mean(self.b[i])
-            transfers = 1.0 / 1.0 + activation
-            
-            Z = transfers * random.randint(0,1)
+            activation = A * tf.reduce_mean(self.W[i] + self.b[i])
+            Z = activation * random.randint(0,1)
             if i != self.L-1:
                 A = tf.nn.relu(Z)
             else:
@@ -42,7 +39,7 @@ class RNN:
     def compute_loss(self, A, Y):
         # A = A * (1.0 - A)
         # X = tf.convert_to_tensor(X, dtype=tf.float32)
-        return tf.reduce_mean(tf.nn.log_softmax(A))
+        return tf.reduce_mean(tf.nn.softmax(A))
     
     def update_params(self, lr):
         for i in range(1, self.L):
