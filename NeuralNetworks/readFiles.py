@@ -1,6 +1,5 @@
-#Converts the source code files to txt files for processing in the RNN and DFFN
+#Converts the source code files to txt files for processing
 import os
-from sklearn.feature_extraction.text import CountVectorizer
 
 bubbleTrain = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Training Data/Bubble Sort"
 insertionTrain = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Training Data/Insertion Sort"
@@ -44,51 +43,6 @@ def assignLabels(filePath, fileList, labelList):
                 labelList.append(3)
             elif filePath.find("Selection") != -1:
                 labelList.append(4)
-    
-def assignLabels2(filePath, fileList):
-    os.chdir(filePath)
-    for file in os.listdir():
-        # Check whether file is in text format or not
-        if file.endswith(".java"):
-            path = f"{filePath}/{file}"
-
-            # call read text file function
-            fileList.append(readFile(path))
-            if path.find("Bubble") != -1:
-                fileList.append(0)
-            elif path.find("Insertion") != -1:
-                fileList.append(1)
-            elif filePath.find("Merge") != -1:
-                fileList.append(2)
-            elif filePath.find("Quick") != -1:
-                fileList.append(3)
-            elif filePath.find("Selection") != -1:
-                fileList.append(4)
-
-def createTrainTestData2():
-    trainingFiles, testingFiles = [], [] #the training and testing data
-
-    # create training data:
-    assignLabels2(bubbleTrain, trainingFiles)
-    assignLabels2(insertionTrain, trainingFiles)
-    assignLabels2(mergeTrain, trainingFiles)
-    assignLabels2(quickTrain, trainingFiles)
-    assignLabels2(selectionTrain, trainingFiles)
-
-    # create testing data:
-    assignLabels2(bubbleTest, testingFiles)
-    assignLabels2(insertionTest, testingFiles)
-    assignLabels2(mergeTest, testingFiles)
-    assignLabels2(quickTest, testingFiles)
-    assignLabels2(selectionTest, testingFiles)
-
-    return trainingFiles, testingFiles
-
-def createEmbeddings(xData):
-    
-
-    return embeddings
-
 
 def createTrainTestData():
     trainingFiles, trainingLabels, testingFiles, testingLabels = [], [], [], [] #the training and testing data
