@@ -29,7 +29,7 @@ def assignLabels(filePath, fileList, labelList):
     os.chdir(filePath)
     for file in os.listdir():
         # Check whether file is in text format or not
-        if file.endswith(".java"):
+        if file.endswith(".py"):
             path = f"{filePath}/{file}"
             # call read text file function
             fileList.append(readFile(path))

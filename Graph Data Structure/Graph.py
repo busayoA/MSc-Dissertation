@@ -1,9 +1,10 @@
-import Edge, Node
+import Edge, Node, networkx as nx, matplotlib.pyplot as plt
 
 class Graph:
     def __init__(self, nodes, edges):
         self.nodes = nodes
         self.edges = edges
+        self.edgeSets = []
 
     def addNode(self, node):
         if node not in self.nodes:
@@ -21,6 +22,7 @@ class Graph:
         if edgeFound is False:
             self.edges.append(Edge.Edge(len(self.edges)-1, startNode, endNode))
             startNode.addConnection(endNode)
+            self.edgeSets.append([startNode.nodeID, endNode.nodeID])
         else:
             print("Edge between", startNode.nodeID, "&", endNode.nodeID, "already exists")
 
@@ -31,6 +33,7 @@ class Graph:
             print("Invalid Operation: node", endNode.nodeID, "does not exist in this graph")
         else:
             self.addEgde(startNode, endNode)
+
 
     def removeNode(self, node):
         for endNode in node.connections:
@@ -64,13 +67,13 @@ class Graph:
         else:
             for node in firstNode.connections:
                 if node.nodeID == secondNode.nodeID:
-                    print("Edge from", firstNode.nodeID, "to", secondNode.nodeID)
+                    # print("Edge from", firstNode.nodeID, "to", secondNode.nodeID)
                     adjacent = True
                     break
             
             for node in secondNode.connections:
                 if node.nodeID == firstNode.nodeID:
-                    print("Edge from", secondNode.nodeID, "to", firstNode.nodeID)
+                    # print("Edge from", secondNode.nodeID, "to", firstNode.nodeID)
                     adjacent = True
                     break
         
@@ -85,6 +88,25 @@ class Graph:
             for node in node.connections:
                 print(node.nodeID, end=" ")
 
+    def traverse(self, startNode, index):
+        startNode.traversed = True
+        print(index, startNode.nodeID)
+        for node in startNode.connections:
+            if node.traversed is False:
+                index += 1
+                self.traverse(node, index)
+
+        for node in self.nodes:
+            if node.traversed is False:
+                index += 1
+                self.traverse(node, index)
+
+    def visualiseGraph(self):
+        G = nx.DiGraph()
+        G.add_edges_from(self.edgeSets)
+        nx.draw_networkx(G)
+        plt.show()
+
     def printAdjList(self):
         for node in self.nodes:
             node.printNode()
@@ -97,27 +119,35 @@ nodeC = Node.Node("C")
 nodeD = Node.Node("D")
 nodeE = Node.Node("E")
 nodeF = Node.Node("F")
-graph.addNode(nodeA)
-graph.addNode(nodeB)
+graph.addNode(nodeF)
 graph.addNode(nodeC)
 graph.addNode(nodeD)
 graph.addNode(nodeE)
+graph.addNode(nodeA)
+graph.addNode(nodeB)
 
-graph.addRelationship(nodeA, nodeB)
 graph.addRelationship(nodeB, nodeA)
 graph.addRelationship(nodeA, nodeC)
 graph.addRelationship(nodeD, nodeB)
+graph.addRelationship(nodeA, nodeB)
 graph.addRelationship(nodeB, nodeE)
 graph.addRelationship(nodeA, nodeF)
 
-graph.addEgde(nodeA, nodeB)
+# graph.addEgde(nodeA, nodeB)
 
 graph.printAdjList()
 
-graph.adjacentNodes(nodeA, nodeB)
-graph.adjacentNodes(nodeA, nodeF)
-graph.getConnectedNodes(nodeF)
-graph.addNode(nodeD)
-graph.removeEdge(nodeA, nodeB)
-graph.removeNode(nodeA)
-graph.printAdjList()
+# graph.adjacentNodes(nodeA, nodeB)
+# graph.adjacentNodes(nodeA, nodeF)
+# graph.getConnectedNodes(nodeF)
+# graph.addNode(nodeD)
+# graph.removeEdge(nodeA, nodeB)
+# graph.removeNode(nodeA)
+# graph.addNode(nodeA)
+# graph.printAdjList()
+
+graph.traverse(nodeA, 0)
+graph.visualiseGraph()
+
+
+
