@@ -1,5 +1,5 @@
 import pandas as pd
-import RNN as NN
+import ManualRNN as NN
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
@@ -28,11 +28,10 @@ vectorizer.fit(x_train)
 x_train = vectorizer.transform(x_train)
 x_test  = vectorizer.transform(x_test)
 
-print(x_train)
-x_train = x_train.toarray()
-x_test = x_test.toarray()
-# x_train = np.reshape(x_train, (x_train.shape[0], len(x_train[0])))/255.
-# x_test =  np.reshape(x_test, (x_test.shape[0], len(x_test[0])))/255.
+x_train = x_train.toarray()/255.
+x_test = x_test.toarray()/255.
+x_train = np.reshape(x_train, (x_train.shape[0], 105))
+x_test =  np.reshape(x_test, (x_test.shape[0], 105))
 
 
 epochs = 5
@@ -40,7 +39,7 @@ lr = 0.4
 batch_size = 100
 steps_per_epoch = 5
 
-rnn  = NN.RNN([len(x_train), 128, 128, 5])
+rnn  = NN.RNN([x_train.shape[0], 128, 128, 5])
 # rnn.info()
 print('Steps per epoch:', steps_per_epoch)
 history = rnn.train(

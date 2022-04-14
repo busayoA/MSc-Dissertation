@@ -1,5 +1,5 @@
-import RNN as rnn
-import readFiles as rf
+import ManualRNN as RNN
+import readCodeFiles as rf
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 
@@ -18,7 +18,7 @@ x_test =  np.reshape(x_test, (x_test.shape[0], len(x_test[0])))/255.
 epochs = 10
 lr = 0.2
 
-rnn  = rnn.RNN([len(x_train), 20, 20, 5], epochs, lr)
+rnn  = RNN.RNN([len(x_train), 20, 20, 5], epochs, lr)
 rnn.trainModel(x_train, y_train, x_test, y_test)
 for i in range(len(x_train)):
     prediction = rnn.predict(x_train[i])
