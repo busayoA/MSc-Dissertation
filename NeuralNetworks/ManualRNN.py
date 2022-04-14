@@ -26,6 +26,7 @@ class RNN:
         for feature in x_train:
             inputs = feature
             for i in range(1, self.L):
+                weightError, biasError = 0., 0.
                 returnValues = []
                 currentLayer = self.layers[i]
                 # inputs = (np.transpose(inputs) * self.W[i])  #+ self.b[i]
@@ -33,19 +34,19 @@ class RNN:
                 for j in range(currentLayer):
                     weight = self.W[i][j][index]
                     bias = self.b[i][j][index]
+
+                    weightError = feature - weight
+
                     weight = (weight * inputs) + bias
                     returnValues.append(weight)
+
+                    
+
                 inputs = np.array(returnValues)/255.
         return inputs
 
     def compute_loss(self, A, Y):
         return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(tf.transpose(Y), tf.transpose(A)))
-    
-    def updateWeights(self, lr):
-        for i in range(1, self.L):
-            weights = np.array(self.W[i])
-            self.W[i] = weights - (lr * weights)
-            self.b[i] = self.b[i] - (lr * self.b[i])
 
     def predict(self, featureValues):
          outputs = self.forward_pass(featureValues)
@@ -66,7 +67,7 @@ class RNN:
                 print(end='.')
                 # print(outputs, end="\n\n")
 
-            # self.updateWeights(lr)
+            self.updateWeights(lr)
 
             validationAccuracy = 0
             for i in range(len(x_test[:5])):
