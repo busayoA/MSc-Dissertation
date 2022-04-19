@@ -1,4 +1,12 @@
-import Edge, Node, networkx as nx, matplotlib.pyplot as plt
+import os
+from platform import node
+import Edge
+import Node
+import networkx as nx
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+# mpl.use('tkagg')
 
 class Graph:
     def __init__(self, nodes, edges):
@@ -51,8 +59,8 @@ class Graph:
                 if self.identicalEdges(placeholderEdge, edge) is True:
                     placeholderEdge = edge
             
-            self.edges.remove(placeholderEdge)
-            startNode.connections.remove(endNode)
+                    self.edges.remove(placeholderEdge)
+                    startNode.connections.remove(endNode)
 
     def identicalEdges(self, edge1, edge2):
         if edge1.start == edge2.start and edge1.end == edge2.end:
@@ -106,36 +114,80 @@ class Graph:
         G.add_edges_from(self.edgeSets)
         nx.draw_networkx(G)
         plt.show()
+        # plt.savefig("filename.png")
 
     def printAdjList(self):
         for node in self.nodes:
             node.printNode()
-    
-nodes, edges = [], []
+
+
+nodes, nodeIDs, edges = [], [], []
 graph = Graph(nodes, edges)
-nodeA = Node.Node("A")
-nodeB = Node.Node("B")
-nodeC = Node.Node("C")
-nodeD = Node.Node("D")
-nodeE = Node.Node("E")
-nodeF = Node.Node("F")
-graph.addNode(nodeF)
-graph.addNode(nodeC)
-graph.addNode(nodeD)
-graph.addNode(nodeE)
-graph.addNode(nodeA)
-graph.addNode(nodeB)
 
-graph.addRelationship(nodeB, nodeA)
-graph.addRelationship(nodeA, nodeC)
-graph.addRelationship(nodeD, nodeB)
-graph.addRelationship(nodeA, nodeB)
-graph.addRelationship(nodeB, nodeE)
-graph.addRelationship(nodeA, nodeF)
+filename = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Merge Sort/0.java"
+def readFile(filePath):
+    with open(filePath, 'r') as f:
+        return f.readlines()
 
-# graph.addEgde(nodeA, nodeB)
+
+myFile = readFile(filename)
+lines = []
+for line in myFile:
+    lines.append(line.replace("\n", ""))
+
+# lines = [word for word in lines if len(word) > 1]
+# print(lines)
+count = 0
+for i in range(len(lines)):
+    if lines[i].find('{') is not -1:
+        nodeID = 'node{}'.format(i)
+        nodeIDs.append(nodeID)
+        parentNode = Node.Node(nodeID)
+        graph.addNode(parentNode)
+        j = i+1
+        while j < len(lines) and lines[j].find('}') is -1:
+            nodeID = 'node{}'.format(j)
+            nodeIDs.append(nodeID)
+            childNode = Node.Node(nodeID)
+            graph.addNode(childNode)
+            graph.addRelationship(parentNode, childNode)
+            j += 1
 
 graph.printAdjList()
+graph.visualiseGraph()
+    
+# print([node.nodeID for node in nodes])
+# def assignLabels(filePath, fileList, labelList):
+#     os.chdir(filePath)
+#     for file in os.listdir():
+#         # Check whether file is in text format or not
+#         if file.endswith(".java"):
+#             path = f"{filePath}/{file}"
+
+
+# nodeA = Node.Node("A")
+# nodeB = Node.Node("B")
+# nodeC = Node.Node("C")
+# nodeD = Node.Node("D")
+# nodeE = Node.Node("E")
+# nodeF = Node.Node("F")
+# graph.addNode(nodeF)
+# graph.addNode(nodeC)
+# graph.addNode(nodeD)
+# graph.addNode(nodeE)
+# graph.addNode(nodeA)
+# graph.addNode(nodeB)
+
+# graph.addRelationship(nodeB, nodeA)
+# graph.addRelationship(nodeA, nodeC)
+# graph.addRelationship(nodeD, nodeB)
+# graph.addRelationship(nodeA, nodeB)
+# graph.addRelationship(nodeB, nodeE)
+# graph.addRelationship(nodeA, nodeF)
+
+# # graph.addEgde(nodeA, nodeB)
+
+# graph.printAdjList()
 
 # graph.adjacentNodes(nodeA, nodeB)
 # graph.adjacentNodes(nodeA, nodeF)
@@ -146,8 +198,8 @@ graph.printAdjList()
 # graph.addNode(nodeA)
 # graph.printAdjList()
 
-graph.traverse(nodeA, 0)
-graph.visualiseGraph()
+# graph.traverse(nodeA, 0)
+# graph.visualiseGraph()
 
 
 
