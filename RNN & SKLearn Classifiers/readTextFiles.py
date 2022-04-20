@@ -140,5 +140,9 @@ def getVectorizedData():
 # #     return xTrain, yTrain, xTest, yTest
 
 
-
-
+for i in range(25, 101):
+    fileName = '{}'.format(i)
+    fileName = fileName + '.py'
+    print(fileName)
+    with open(fileName, 'w') as f:
+        f.write("")
