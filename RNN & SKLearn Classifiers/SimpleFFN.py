@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import readTextFiles as rtf
-import readCodeFiles as rcf
+import readSortingFiles as rsf
 from sklearn.feature_extraction.text import CountVectorizer
 from scipy.special import logsumexp
 
@@ -90,27 +90,27 @@ class FeedForwardNetwork:
 
 
 
-# x_train, y_train, x_test, y_test = rtf.getVectorizedData()
-
-# epochs = 10
-# lr = 0.001
-# rnn = FeedForwardNetwork([len(x_train[0]), 128, 128, 2], epochs, lr)
-
-# # print(rnn.backPropagate(x_train, y_train))
-# # print(rnn.predict(x_test, y_test))
-# metrics = rnn.trainModel(x_train, y_train, x_test, y_test)
-# print("Average loss:", np.average(metrics['trainingLoss']), "Average accuracy:", np.average(metrics['accuracy']))
-
-
-x_train, y_train, x_test, y_test = rcf.getVectorizedData()
-
+x_train, y_train, x_test, y_test = rtf.getVectorizedData()
+# print(y_train)
 epochs = 10
 lr = 0.001
-rnn = FeedForwardNetwork([len(x_train[0]), 128, 128, 2], epochs, lr)
+rnn = FeedForwardNetwork([len(x_train[0]), 128, 128, 3], epochs, lr)
 
 # print(rnn.backPropagate(x_train, y_train))
 # print(rnn.predict(x_test, y_test))
 metrics = rnn.trainModel(x_train, y_train, x_test, y_test)
 print("Average loss:", np.average(metrics['trainingLoss']), "Average accuracy:", np.average(metrics['accuracy']))
+
+
+# x_train, y_train, x_test, y_test = rsf.getVectorizedData()
+# print(x_train)
+# epochs = 10
+# lr = 0.001
+# rnn = FeedForwardNetwork([len(x_train[0]), 128, 128, 3], epochs, lr)
+
+# # print(rnn.backPropagate(x_train, y_train))
+# # print(rnn.predict(x_test, y_test))
+# metrics = rnn.trainModel(x_train, y_train, x_test, y_test)
+# print("Average loss:", np.average(metrics['trainingLoss']), "Average accuracy:", np.average(metrics['accuracy']))
 
 

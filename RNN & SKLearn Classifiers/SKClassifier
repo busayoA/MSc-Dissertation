@@ -1,5 +1,5 @@
 import readTextFiles as rtf
-import readCodeFiles as rcf
+import readSortingFiles as rsf
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
@@ -54,7 +54,7 @@ rfAccuracy = accuracy_score(rfPred, yTest)
 
 
 # Test on code
-x_train, y_train, x_test, y_test = rcf.getData()
+x_train, y_train, x_test, y_test = rsf.getData()
 nbPred1 = nbClassify(x_train, y_train, x_test)
 nbAccuracy1 = accuracy_score(nbPred1, y_test)
 # print(nbAccuracy1)
