@@ -1,9 +1,9 @@
 def mergeSort(arr,  l,  r) :
     if (l < r) :
         mid = int((l + r) / 2)
-        self.mergeSort(arr, l, mid)
-        self.mergeSort(arr, mid + 1, r)
-        self.merge(arr, l, r, mid)
+        mergeSort(arr, l, mid)
+        mergeSort(arr, mid + 1, r)
+        merge(arr, l, r, mid)
 
 def merge(arr,  l,  r,  mid) :
     n1 = mid - l + 1
