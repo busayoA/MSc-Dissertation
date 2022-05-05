@@ -1,70 +1,98 @@
-import ast, Node
+import ast
 import networkx as nx
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from ete3 import Tree
-# from anytree import AnyNode, RenderTree, Node
 
-class ASTTree(ast.NodeVisitor):
-    def __init__(self, startNode):
-        self.root = startNode
-        self.children = []
-        self.nodes = []
-        self.nodeIDs = []
-        self.edgeSets = []
-
-    def insertRelationship(self, parentNode, childNode):
-        if parentNode.nodeID not in childNode.childIDs:
-            if parentNode.nodeID not in self.nodeIDs:
-                self.nodes.append(parentNode)
-                self.nodeIDs.append(parentNode.nodeToString())
-
-            if childNode.nodeID not in self.nodeIDs:
-                self.nodes.append(childNode)
-                self.nodeIDs.append(childNode.nodeToString())
-
-            if childNode.nodeID not in parentNode.childIDs:
-                parentNode.addChild(childNode)
-                self.edgeSets.append([parentNode, childNode])
-
-    def traverseAST(self, startNode):
-        parentNode = Node.Node(startNode)
-        if isinstance(startNode, ast.AST):
-            for node in list(ast.iter_child_nodes(startNode)):
-                childNode = Node.Node(node)
-                self.traverseAST(node)
-                self.insertRelationship(parentNode, childNode)
-        elif isinstance(startNode, list):
-            for node in list(ast.iter_child_nodes(startNode)):
-                childNode = Node.Node(node)
-                self.traverseAST(node)
-                self.insertRelationship(parentNode, childNode)
-        
-        # print(parentNode.nodeToString(), ":", [childNode.nodeToString() for childNode in parentNode.children])
-        # elif isinstance(startNode, list):
-        #     for node in list(ast.iter_child_nodes(startNode)):
-        #         print(node)
-        # # return list(self.children)
-
-    def visualiseTree(self):
-        G = nx.DiGraph()
-        G.add_edges_from(self.edgeSets)
-
-        # nx.draw_networkx(G)
-        # plt.show() 
-        subtrees = {node:Tree(name=node) for node in G.nodes()}
-        [*map(lambda edge:subtrees[edge[0]].add_child(subtrees[edge[1]]), G.edges())]
-
-        t = subtrees[self.root]
-        # print(t.get_ascii())
-        t.show()
-        return G
+mpl.use('Qt5Agg')
 
 merge = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Sorting/Merge Sort/1.py"
-def assignLabels():
+def readAST():
     with open (merge, "r") as file:
         return ast.parse(file.read())
 
-f = assignLabels()
-astTree = ASTTree(f)
-astTree.traverseAST(f)
-astTree.visualiseTree()
+programAST = readAST()
+
+
+class Node(ast.NodeVisitor):
+    def __init__(self):
+        self.nodeList = []
+        self.edgeSets = []
+
+    def visitAllNodes(self, node):
+        self.nodeList.append(node)
+        if isinstance(node, ast.AST):
+            for child in list(ast.iter_child_nodes(node)):
+                self.nodeList.append(child)
+                self.generic_visit(child)
+        elif isinstance(node, list):
+            for child in list(ast.iter_child_nodes(node)):
+                self.nodeList.append(child)
+                self.generic_visit(child)
+        else:
+            self.generic_visit(node)
+            self.nodeList.append(node)
+
+    def getGraph(self, root):
+        self.visitAllNodes(root)
+        nodes = self.nodeList
+        i = 0
+        while i < len(nodes):
+            currentNode = self.nodeList[i]
+            nodeChildren = self.getChildren(currentNode)
+            for node in nodeChildren:
+                self.edgeSets.append([currentNode, node])
+                for miniChild in self.getChildren(node):
+                    self.edgeSets.append([node, miniChild])
+                    for child2 in self.getChildren(miniChild):
+                        self.edgeSets.append([miniChild, child2])
+            i+=1
+            
+    def getChildren(self, node):
+        children = list(ast.iter_child_nodes(node))
+        return children
+
+class Graph():
+    def __init__(self):
+        self.nodes = []
+        self.edges = []
+        self.edgeSets = []
+
+    def addNode(self, node, children):
+        if node not in self.nodes:
+            self.nodes.append(node)
+            for child in children:
+                self.nodes.append(child)
+                self.edgeSets.append([node, child])
+    
+    def visualiseGraph(self):
+        G = nx.DiGraph()
+        G.add_edges_from(self.edgeSets)
+        nx.draw_networkx(G)
+        plt.show()
+
+
+node = Node()
+node.getGraph(programAST)
+print(node.nodeList)
+print(node.edgeSets)
+G = nx.DiGraph()
+G.add_edges_from(node.edgeSets)
+# nx.draw_networkx(G)
+# plt.show()
+
+subtrees = {node:Tree(name=node) for node in G.nodes()}
+[*map(lambda edge:subtrees[edge[0]].add_child(subtrees[edge[1]]), G.edges())]
+
+t = subtrees[programAST]
+# print(t.get_ascii())
+t.show()
+
+
+# for child in node.getChildren(programAST):
+#     children = node.getChildren(child)
+#     graph.addNode(child, children)
+#     for miniChild in children:
+#         miniChildren = node.getChildren(miniChild)
+#         graph.addNode(miniChild, miniChildren)
+# graph.visualiseGraph()

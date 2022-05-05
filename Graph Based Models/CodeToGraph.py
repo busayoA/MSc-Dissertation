@@ -1,5 +1,5 @@
 import ast
-from anytree import AnyNode, RenderTree, NodeMixin
+from anytree import AnyNode, RenderTree
 from ete3 import Tree as tree
 from collections import deque
 
@@ -32,6 +32,7 @@ class Node(ast.NodeVisitor):
                 for item in value:
                     if isinstance(item, ast.AST):
                         self.visit(item)
+                        print(item)
             elif isinstance(value, ast.AST):
                 self.visit(value)
         
@@ -44,4 +45,4 @@ class Node(ast.NodeVisitor):
         
 
 node = Node()
-node.walk(programAST)
+node.generic_visit(programAST)

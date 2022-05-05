@@ -1,8 +1,13 @@
 import ast, Node
+
+import matplotlib
+from os import O_NONBLOCK
 import readFiles as rf
 import networkx as nx
 from ete3 import Tree
+import matplotlib.pyplot as plt
 # from anytree import AnyNode, RenderTree, Node
+matplotlib.use('Qt5Agg')
 
 class ASTTree(ast.NodeVisitor):
     def __init__(self, startNode):
@@ -22,24 +27,24 @@ class ASTTree(ast.NodeVisitor):
                 self.nodes.append(childNode)
                 self.nodeIDs.append(childNode.nodeID)
 
-            if childNode.nodeID not in parentNode.childIDs:
+            if childNode.nodeObject not in parentNode.children:
                 parentNode.addChild(childNode)
                 self.edgeSets.append([parentNode.nodeObject, childNode.nodeObject])
 
     def traverseAST(self, startNode):
         parentNode = Node.Node(startNode)
+        self.nodes.append(parentNode)
         if isinstance(startNode, ast.AST):
             for node in list(ast.iter_child_nodes(startNode)):
                 childNode = Node.Node(node)
+                parentNode.addChild(childNode)
                 self.traverseAST(node)
-                self.insertRelationship(parentNode, childNode)
         elif isinstance(startNode, list):
             for node in list(ast.iter_child_nodes(startNode)):
                 childNode = Node.Node(node)
+                parentNode.addChild(childNode)
                 self.traverseAST(node)
-                self.insertRelationship(parentNode, childNode)
-        
-        print(parentNode.nodeToString(), ":", [childNode.nodeToString() for child in parentNode.children])
+
         # elif isinstance(startNode, list):
         #     for node in list(ast.iter_child_nodes(startNode)):
         #         print(node)
@@ -66,4 +71,22 @@ def assignLabels():
 f = assignLabels()
 astTree = ASTTree(f)
 astTree.traverseAST(f)
-astTree.visualiseTree()
+# astTree.visualiseTree()
+prunedTree = []
+
+for node in astTree.nodes:
+    if node not in prunedTree and len(node.children) > 0:
+        prunedTree.append(node)
+        # node.printNode()
+
+graph = []
+c = []
+prunedEdges = []
+for node in prunedTree:
+    for childNode in node.children:
+        prunedEdges.append([node, childNode])
+
+# G = nx.DiGraph()
+# G.add_edges_from(prunedEdges)
+# plt.show()
+# plt.savefig("filename.png")
