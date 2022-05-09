@@ -6,47 +6,23 @@ from ete3 import Tree
 
 mpl.use('Qt5Agg')
 
-merge = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Sorting/Merge Sort/1.py"
-def readAST():
-    with open (merge, "r") as file:
-        return ast.parse(file.read())
-
-programAST = readAST()
-
-
 class Node(ast.NodeVisitor):
     def __init__(self):
         self.nodeList = []
         self.edgeSets = []
 
-    def visitAllNodes(self, node):
+    def generic_visit(self, node):
         self.nodeList.append(node)
         if isinstance(node, ast.AST):
             for child in list(ast.iter_child_nodes(node)):
                 self.nodeList.append(child)
+                self.edgeSets.append([node, child])
                 self.generic_visit(child)
         elif isinstance(node, list):
             for child in list(ast.iter_child_nodes(node)):
                 self.nodeList.append(child)
+                self.edgeSets.append([node, child])
                 self.generic_visit(child)
-        else:
-            self.generic_visit(node)
-            self.nodeList.append(node)
-
-    def getGraph(self, root):
-        self.visitAllNodes(root)
-        nodes = self.nodeList
-        i = 0
-        while i < len(nodes):
-            currentNode = self.nodeList[i]
-            nodeChildren = self.getChildren(currentNode)
-            for node in nodeChildren:
-                self.edgeSets.append([currentNode, node])
-                for miniChild in self.getChildren(node):
-                    self.edgeSets.append([node, miniChild])
-                    for child2 in self.getChildren(miniChild):
-                        self.edgeSets.append([miniChild, child2])
-            i+=1
             
     def getChildren(self, node):
         children = list(ast.iter_child_nodes(node))
@@ -72,15 +48,25 @@ class Graph():
         plt.show()
 
 
+merge = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Sorting/Merge Sort/1.py"
+def readAST():
+    with open (merge, "r") as file:
+        return ast.parse(file.read())
+
+programAST = readAST()
+
+# CREATE THE AST GRAPH
 node = Node()
-node.getGraph(programAST)
+# node.getGraph(programAST)
+node.generic_visit(programAST)
 print(node.nodeList)
 print(node.edgeSets)
 G = nx.DiGraph()
 G.add_edges_from(node.edgeSets)
-# nx.draw_networkx(G)
-# plt.show()
+nx.draw_networkx(G)
+plt.show()
 
+# CREATE A TREE FROM THE AST GRAPH
 subtrees = {node:Tree(name=node) for node in G.nodes()}
 [*map(lambda edge:subtrees[edge[0]].add_child(subtrees[edge[1]]), G.edges())]
 
