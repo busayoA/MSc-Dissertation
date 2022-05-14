@@ -1,11 +1,11 @@
-import random
+import random, nltk, string
 import pandas as pd
 import numpy as np
 from sklearn import datasets
 from sklearn.utils import shuffle
 import tensorflow as tf
 from sklearn.feature_extraction.text import CountVectorizer
-from nltk.corpus import twitter_samples
+from nltk.corpus import twitter_samples, stopwords
 
 # # =====================================================================================================================================================================================
 # # CODE 
@@ -61,19 +61,24 @@ for i in x:
 # saveData(x_test, 'x_test.csv', 'y_test.csv')
 
 def getVectorizedTextData():
+    stopWords = stopwords.words('english')
+
     amazon = pd.read_csv("Text Data/amazon_cells_labelled.txt", names=['review', 'sentiment'], sep='\t')
-    imdb = pd.read_csv("Text Data/imdb_labelled.txt", names=['review', 'sentiment'], sep='\t')
     yelp = pd.read_csv("Text Data/yelp_labelled.txt", names=['review', 'sentiment'], sep='\t')
 
-    dataSets = [amazon, imdb, yelp]
+    dataSets = [amazon, yelp]
     allReviews = pd.concat(dataSets)
-    x_train = list(allReviews['review'])
-    y_train = list(allReviews['sentiment'])
+    xData = list(allReviews['review'])
+    yData = list(allReviews['sentiment'])
 
-    x_test = x
-    y_test = y
+    vocabulary = []
 
-    vocabulary = sorted(set(x_train))
+    for sentence in xData:
+        sentence = nltk.word_tokenize(sentence)
+        for word in sentence:
+            word = word.lower()
+            if word not in vocabulary and word not in stopWords and word not in string.punctuation:
+                vocabulary.append(word)
 
     vectorizer = CountVectorizer(tokenizer=lambda doc:doc, min_df=2, vocabulary=vocabulary)
     vectorizer = vectorizer.fit(x_train)
