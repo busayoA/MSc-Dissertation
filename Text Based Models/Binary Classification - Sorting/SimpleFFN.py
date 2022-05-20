@@ -40,7 +40,6 @@ class FeedForwardNetwork:
         return x
 
     def backPropagate(self, x, y):
-        optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=self.learningRate)
         with tf.GradientTape(persistent=True) as tape:
             outputs = self.forwardPropagate(x)
             loss = self.lossFunction(outputs, y)
@@ -78,26 +77,25 @@ class FeedForwardNetwork:
 
         for i in range(self.epochs):
             print('Epoch {}'.format(i), end='........')
-            index = 0
             loss = self.backPropagate(xTrain, yTrain)
-            
+
             metrics['trainingLoss'].append(loss)
-            
+
             val_preds = self.predict(xTest)
             metrics['accuracy'].append(np.mean(np.argmax(yTest, axis=1) == val_preds.numpy()))
             print('Accuracy:', metrics['accuracy'][-1], 'Loss:', metrics['trainingLoss'][-1])
-    
+
         return metrics
 
 
-cx_train, cy_train, cx_test, cy_test = rf.getVectorizedCodeData()
+x_train, y_train, x_test, y_test = rf.getVectorizedCodeData()
 
 epochs = 10
 lr = 0.001
-rnn = FeedForwardNetwork([len(cx_train[0]), 128, 128, 2], epochs, lr)
+rnn = FeedForwardNetwork([len(x_train[0]), 128, 128, 2], epochs, lr)
 
 # print(rnn.backPropagate(x_train, y_train))
 # print(rnn.predict(x_test, y_test))
-cmetrics = rnn.trainModel(cx_train, cy_train, cx_test, cy_test)
-print("Average loss:", np.average(cmetrics['trainingLoss']), "Average accuracy:", np.average(cmetrics['accuracy']))
+metrics = rnn.trainModel(x_train, y_train, x_test, y_test)
+print("Average loss:", np.average(metrics['trainingLoss']), "Average accuracy:", np.average(metrics['accuracy']))
 

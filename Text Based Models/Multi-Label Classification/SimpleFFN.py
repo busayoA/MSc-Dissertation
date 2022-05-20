@@ -78,7 +78,6 @@ class FeedForwardNetwork:
 
         for i in range(self.epochs):
             print('Epoch {}'.format(i), end='........')
-            index = 0
             loss = self.backPropagate(xTrain, yTrain)
             
             metrics['trainingLoss'].append(loss)
