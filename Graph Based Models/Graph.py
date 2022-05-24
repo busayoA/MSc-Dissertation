@@ -28,25 +28,6 @@ class Node(ast.NodeVisitor):
         children = list(ast.iter_child_nodes(node))
         return children
 
-class Graph():
-    def __init__(self):
-        self.nodes = []
-        self.edges = []
-        self.edgeSets = []
-
-    def addNode(self, node, children):
-        if node not in self.nodes:
-            self.nodes.append(node)
-            for child in children:
-                self.nodes.append(child)
-                self.edgeSets.append([node, child])
-    
-    def visualiseGraph(self):
-        G = nx.DiGraph()
-        G.add_edges_from(self.edgeSets)
-        nx.draw_networkx(G)
-        plt.show()
-
 
 merge = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Sorting/Merge Sort/1.py"
 def readAST():
@@ -63,8 +44,8 @@ print(node.nodeList)
 print(node.edgeSets)
 G = nx.DiGraph()
 G.add_edges_from(node.edgeSets)
-nx.draw_networkx(G)
-plt.show()
+# nx.draw_networkx(G)
+# plt.show()
 
 # CREATE A TREE FROM THE AST GRAPH
 subtrees = {node:Tree(name=node) for node in G.nodes()}

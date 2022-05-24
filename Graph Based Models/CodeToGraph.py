@@ -3,16 +3,6 @@ from anytree import AnyNode, RenderTree
 from ete3 import Tree as tree
 from collections import deque
 
-class Tree(ast.NodeVisitor, AnyNode):
-    def __init__(self, ID, parent, branches):
-        self.ID = ID
-        self.parent = parent
-        self.node = AnyNode(id=self.ID, parent=self.parent, children=branches)
-        self.branches = branches
-        
-    def printTree(self):
-        print(RenderTree(self.node))
-
 merge = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Sorting/Merge Sort/1.py"
 def readAST():
     with open (merge, "r") as file:
