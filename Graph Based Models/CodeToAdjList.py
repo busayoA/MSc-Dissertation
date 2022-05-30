@@ -13,13 +13,8 @@ mpl.use('Qt5Agg')
 class Node(ast.NodeVisitor):
     def __init__(self):
         self.nodes = []
-        self.astFields = []
-
-        self.edgeSets = []
         self.edges = []
-
         self.adjList = []
-        self.hashedAdjList = []
 
     def visit(self, node):
         method = '' + node.__class__.__name__
@@ -40,7 +35,6 @@ class Node(ast.NodeVisitor):
                     self.nodes.append(child)
                     self.edges.append([node, child])
                     self.generic_visit(child)
-
         elif isinstance(node, list):
             for child in list(ast.iter_child_nodes(node)):
                 if child not in self.nodes:
@@ -67,30 +61,6 @@ class Node(ast.NodeVisitor):
                             self.edges.append([currentChild, child])
                         self.adjList.append([currentChild, children[j:]])
 
-
-            
-
-        # for i in range(len(self.nodeHashes)):
-        #     currentNode = self.nodeList[i]
-        #     currentNodeHash = self.nodeHashes[i]
-
-        #     nodeRelationships = []
-        #     hashedNodeRelationships = []
-        #     for j in range(len(self.edgeSets)):
-        #         currentSet = self.edgeSets[j]
-        #         currentHash = self.edgeHashes[j]
-
-        #         if currentHash[0] == currentNodeHash:
-        #             nodeRelationships.append(currentSet[1])
-        #             hashedNodeRelationships.append(currentHash[1])
-
-        #     if len(nodeRelationships) == 0:
-        #         self.adjList.append([currentNode])   
-        #         self.hashedAdjList.append([currentNodeHash])    
-        #     else:
-        #         self.adjList.append([currentNode, nodeRelationships])
-        #         self.hashedAdjList.append([currentNodeHash, hashedNodeRelationships])
-
     def splitCamelCase(self, identifier: str):
         splitIdentifier = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
         return [i.group(0) for i in splitIdentifier]
@@ -115,29 +85,32 @@ class Node(ast.NodeVisitor):
 
         return finalSplitID
 
+    def convertToGraph(self):
+        graph = nx.DiGraph()
+        graph.add_edges_from(self.edges)
+        # nx.draw_networkx(graph)
+        # plt.show()
+        return graph
 
-merge = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Sorting/Merge Sort/1.py"
-def readAST():
-    with open (merge, "r") as file:
-        return ast.parse(file.read())
 
-programAST = readAST()
+# merge = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Sorting/Merge Sort/1.py"
+# def readAST():
+#     with open (merge, "r") as file:
+#         return ast.parse(file.read())
 
-# CREATE THE AST GRAPH
-node = Node()
-node.generic_visit(programAST)
-# print(ast.dump(programAST))
+# programAST = readAST()
 
-# print(node.nodes)
-node.createAdjList()
+# # CREATE THE AST GRAPH
+# node = Node()
+# node.generic_visit(programAST)
+# # print(ast.dump(programAST))
 
-[print(node.adjList[i]) for i in range(len(node.adjList))]
+# # print(node.nodes)
+# node.createAdjList()
+
+# [print(node.adjList[i]) for i in range(len(node.adjList))]
 # # print(node.nodeList)
 
-G = nx.DiGraph()
-G.add_edges_from(node.edgeSets)
-nx.draw_networkx(G)
-plt.show()
 
 # g = tf.Graph()
 
