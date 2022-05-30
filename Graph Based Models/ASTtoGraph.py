@@ -1,16 +1,9 @@
 import ast
-from pydoc import classname
 import re
-from cv2 import split
 import networkx as nx
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-
 from ete3 import Tree
 
-mpl.use('Qt5Agg')
-
-class Node(ast.NodeVisitor):
+class ASTtoGraph(ast.NodeVisitor):
     def __init__(self):
         self.nodes = []
         self.edges = []
@@ -49,17 +42,8 @@ class Node(ast.NodeVisitor):
     def createAdjList(self):
         for node in self.nodes:
             children = list(ast.iter_child_nodes(node))
-            for child in children:
-                self.edges.append([node, child])
-            self.adjList.append([node, children])
-            if len(children) > 1:
-                for i in range(len(children)):
-                    j = i+1
-                    currentChild = children[i]
-                    if len(children[j:]) > 0:
-                        for k in range(len(children[j:])):
-                            self.edges.append([currentChild, child])
-                        self.adjList.append([currentChild, children[j:]])
+            if len(children) > 0:
+                self.adjList.append([1/hash(node), [1/hash(child) for child in children]])
 
     def splitCamelCase(self, identifier: str):
         splitIdentifier = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
