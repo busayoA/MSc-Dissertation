@@ -1,7 +1,6 @@
 import ast
 import re
 import networkx as nx
-from ete3 import Tree
 
 class ASTtoGraph(ast.NodeVisitor):
     def __init__(self):

@@ -6,7 +6,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from ASTtoGraph import ASTtoGraph
 
-mpl.use('Qt5Agg')
 
 
 merge = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Sorting/Merge Sort"
@@ -56,18 +55,49 @@ def readCodeFiles():
     y_test = tf.keras.utils.to_categorical(y_test)  
 
     gTrain = nx.DiGraph()
+    index = 0
     for graph in x_train_graph:
-        gTrain.add_edges_from(graph.edges)
-    
+        edges = graph.edges
+        hashedEdges = []
+        newEdges = ()
+        yLabel = y_train[index]
+        for edge in edges:
+            edge0 = 1/hash(edge[0])
+            edge1 = 1/hash(edge[1])
+            gTrain.add_node(edge0, yValue=yLabel)
+            gTrain.add_node(edge1, yValue=yLabel)
+            gTrain.add_edge(edge0, edge1)
+        #     newEdges = (edge0, edge1)
+        #     hashedEdges.append(newEdges)
+        # gTrain.add_edges_from(hashedEdges)
+        index += 1
+    x_train_graph = gTrain
     x_train = nx.to_numpy_array(gTrain)
+    # x_train_matrix = nx.to_numpy_matrix(gTrain)
     
     gTest = nx.DiGraph()
+    index = 0
     for graph in x_test_graph:
-        gTrain.add_edges_from(graph.edges)
-    
+        edges = graph.edges
+        hashedEdges = []
+        newEdges = ()
+        yLabel = y_test[index]
+        for edge in edges:
+            edge0 = 1/hash(edge[0])
+            edge1 = 1/hash(edge[1])
+            gTest.add_node(edge0, yValue=yLabel)
+            gTest.add_node(edge1, yValue=yLabel)
+            gTest.add_edge(edge0, edge1)
+        #     newEdges = (edge0, edge1)
+        #     hashedEdges.append(newEdges)
+        # gTest.add_edges_from(hashedEdges)
+        index += 1
+    x_test_graph = gTest
+
     x_test = nx.to_numpy_array(gTest)
-    
-    return x_train, y_train, x_test, y_test 
+    # x_test_matrix = nx.to_numpy_matrix(gTest)
+
+    return x_train, y_train, x_test, y_test, x_train_graph, x_test_graph
 
 def visualize(xGraph):
     """ Visaulise a random graph"""
@@ -78,6 +108,12 @@ def visualize(xGraph):
     nx.draw_networkx(G)
     plt.show()
 
+def getGraphDetails(xGraph):
+    print(xGraph.number_of_nodes())
+    print(xGraph.size())
+
+x_train, y_train, x_test, y_test, x_train_graph, x_test_graph = readCodeFiles()
+getGraphDetails(x_train_graph)
 # x_train_graph, x_train_array, y_train, x_test_graph, x_test_array, y_test = readCodeFiles()
 # print(np.asarray(x_train_array).shape)
 

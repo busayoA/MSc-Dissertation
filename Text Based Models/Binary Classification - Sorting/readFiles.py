@@ -54,4 +54,4 @@ def getVectorizedCodeData():
 
     return x_train, y_train, x_test, y_test
 
-# getVectorizedCodeData()
+getVectorizedCodeData()

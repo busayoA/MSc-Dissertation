@@ -1,10 +1,6 @@
-import string, nltk, random
 import readFiles as rf
 import tensorflow as tf
 import numpy as np
-from sklearn.feature_extraction.text import CountVectorizer
-from scipy.special import logsumexp
-from nltk.corpus import twitter_samples
 
 class FeedForwardNetwork:
     def __init__(self, layers, epochs, learningRate):
