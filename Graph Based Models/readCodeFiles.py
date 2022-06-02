@@ -54,50 +54,40 @@ def readCodeFiles():
     y_test = mergeGraphLabels[int(0.7*len(mergeGraphLabels)):] + quickGraphLabels[int(0.7*len(quickGraphLabels)):] 
     y_test = tf.keras.utils.to_categorical(y_test)  
 
-    gTrain = nx.DiGraph()
-    index = 0
-    for graph in x_train_graph:
-        edges = graph.edges
-        hashedEdges = []
-        newEdges = ()
-        yLabel = y_train[index]
-        for edge in edges:
-            edge0 = 1/hash(edge[0])
-            edge1 = 1/hash(edge[1])
-            gTrain.add_node(edge0, yValue=yLabel)
-            gTrain.add_node(edge1, yValue=yLabel)
-            gTrain.add_edge(edge0, edge1)
-        #     newEdges = (edge0, edge1)
-        #     hashedEdges.append(newEdges)
-        # gTrain.add_edges_from(hashedEdges)
-        index += 1
-    x_train_graph = gTrain
-    x_train = nx.to_numpy_array(gTrain)
-    # x_train_matrix = nx.to_numpy_matrix(gTrain)
     
-    gTest = nx.DiGraph()
-    index = 0
-    for graph in x_test_graph:
-        edges = graph.edges
-        hashedEdges = []
-        newEdges = ()
-        yLabel = y_test[index]
-        for edge in edges:
-            edge0 = 1/hash(edge[0])
-            edge1 = 1/hash(edge[1])
-            gTest.add_node(edge0, yValue=yLabel)
-            gTest.add_node(edge1, yValue=yLabel)
-            gTest.add_edge(edge0, edge1)
-        #     newEdges = (edge0, edge1)
-        #     hashedEdges.append(newEdges)
-        # gTest.add_edges_from(hashedEdges)
-        index += 1
-    x_test_graph = gTest
-
-    x_test = nx.to_numpy_array(gTest)
-    # x_test_matrix = nx.to_numpy_matrix(gTest)
+    x_train, x_train_graph = prepareGraphs(x_train_graph, y_train)
+    x_test, x_test_graph = prepareGraphs(x_test_graph, y_test)
 
     return x_train, y_train, x_test, y_test, x_train_graph, x_test_graph
+
+def prepareGraphs(xGraph, yValues):
+    totalGraph, totalList = [], []
+    index = 0
+    for graph in xGraph:
+        G = nx.DiGraph()
+        edges = graph.edges
+        yLabel = yValues[index]
+        for edge in edges:
+            nodeTypeIndicator0 = 1
+            nodeTypeIndicator1 = 1
+
+            edgeTypeIndicator = 1
+            node0 = edge[0]
+            node1 = edge[1]
+            if len(list(ast.iter_child_nodes(node1))) == 0:
+                nodeTypeIndicator1 = 2
+                edgeTypeIndicator = 2
+                # print(node1)
+            node0 = 1/hash(edge[0])/255.
+            node1 = 1/hash(edge[1])/255.
+            G.add_node(node0, yValue = yLabel, nodeType = nodeTypeIndicator0)
+            G.add_node(node1, yValue = yLabel, nodeType = nodeTypeIndicator1)
+            G.add_edge(node0, node1, edgeType = [edgeTypeIndicator])
+        xList = nx.to_numpy_array(G)
+        totalGraph.append(G)
+        totalList.append(xList)
+        index += 1
+    return xList, totalGraph
 
 def visualize(xGraph):
     """ Visaulise a random graph"""
@@ -112,8 +102,11 @@ def getGraphDetails(xGraph):
     print(xGraph.number_of_nodes())
     print(xGraph.size())
 
-x_train, y_train, x_test, y_test, x_train_graph, x_test_graph = readCodeFiles()
-getGraphDetails(x_train_graph)
+# x_train, y_train, x_test, y_test, x_train_graph, x_test_graph = readCodeFiles()
+# # getGraphDetails(x_train_graph)
+# prepareGraphs(x_train_graph, y_train)
+
+
 # x_train_graph, x_train_array, y_train, x_test_graph, x_test_array, y_test = readCodeFiles()
 # print(np.asarray(x_train_array).shape)
 
