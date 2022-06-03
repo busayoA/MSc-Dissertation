@@ -1,4 +1,5 @@
 import os, ast, random
+from pydoc import classname
 import numpy as np
 import tensorflow as tf
 import networkx as nx
@@ -54,19 +55,16 @@ def readCodeFiles():
     y_test = mergeGraphLabels[int(0.7*len(mergeGraphLabels)):] + quickGraphLabels[int(0.7*len(quickGraphLabels)):] 
     y_test = tf.keras.utils.to_categorical(y_test)  
 
-    
-    x_train, x_train_graph = prepareGraphs(x_train_graph, y_train)
-    x_test, x_test_graph = prepareGraphs(x_test_graph, y_test)
+    x_train, x_train_graph = prepareGraphs(x_train_graph)
+    x_test, x_test_graph = prepareGraphs(x_test_graph)
 
-    return x_train, y_train, x_test, y_test, x_train_graph, x_test_graph
+    return x_train, y_train, x_test, y_test, x_train_graph, x_test_graph, 
 
-def prepareGraphs(xGraph, yValues):
+def prepareGraphs(xGraph):
     totalGraph, totalList = [], []
-    index = 0
     for graph in xGraph:
         G = nx.DiGraph()
         edges = graph.edges
-        yLabel = yValues[index]
         for edge in edges:
             nodeTypeIndicator0 = 1
             nodeTypeIndicator1 = 1
@@ -80,14 +78,19 @@ def prepareGraphs(xGraph, yValues):
                 # print(node1)
             node0 = 1/hash(edge[0])/255.
             node1 = 1/hash(edge[1])/255.
-            G.add_node(node0, yValue = yLabel, nodeType = nodeTypeIndicator0)
-            G.add_node(node1, yValue = yLabel, nodeType = nodeTypeIndicator1)
-            G.add_edge(node0, node1, edgeType = [edgeTypeIndicator])
+            AST = ASTtoGraph()
+            className0 = edge[0].__class__.__name__
+            className1 = edge[1].__class__.__name__
+            if G.has_node(node0) is False:
+                G.add_node(node0, encoding = 1/hash(edge[0])/255., className = className0, nodeType = nodeTypeIndicator0)
+            if G.has_node(node1) is False:
+                G.add_node(node1, encoding = 1/hash(edge[1])/255., className = className1, nodeType = nodeTypeIndicator1)
+            G.add_edge(node0, node1, edgeType = edgeTypeIndicator)
         xList = nx.to_numpy_array(G)
         totalGraph.append(G)
         totalList.append(xList)
-        index += 1
-    return xList, totalGraph
+    totalList = np.array(totalList, dtype=object)
+    return totalList, totalGraph
 
 def visualize(xGraph):
     """ Visaulise a random graph"""

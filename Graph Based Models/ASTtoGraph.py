@@ -1,4 +1,5 @@
 import ast
+from pydoc import classname
 import re
 import networkx as nx
 
@@ -14,8 +15,9 @@ class ASTtoGraph(ast.NodeVisitor):
         return visitor(node)
 
     def getClassName(self, node):
-        className = "" + node.__class__.__name__
-        return className
+        className = '' + node.__class__.__name__
+        visitor = getattr(self, className, self.generic_visit)
+        return visitor(node)
 
     def generic_visit(self, node):
         if node not in self.nodes:
