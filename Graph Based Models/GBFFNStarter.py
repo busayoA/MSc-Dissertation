@@ -1,20 +1,12 @@
-from matplotlib.pyplot import step
 import networkx as nx
 import numpy as np
 import tensorflow as tf
 import readCodeFiles as rcf
+import matplotlib as mlp
+import matplotlib.pyplot as plt
 
+mlp.use('Qt5Agg')
 
-
-# for i in range(stepsPerEpoch):
-#     currentXBatch = x_train_graph[i*batchSize:(i+1)*batchSize]
-#     currentYBatch = y_train[i*batchSize:(i+1)*batchSize]
-#     currentEdges = []
-
-    # if len(currentXBatch) > 1:
-    #     print(currentXBatch)
-    #     print(currentYBatch)
-    #     print("\n\n")
 
 class GBFFN():
     def __init__(self, layers, epochs, learningRate):
@@ -100,59 +92,39 @@ class GBFFN():
         return metrics
 
 x_train, y_train, x_test, y_test, x_train_graph, x_test_graph = rcf.readCodeFiles()
-
-# print(x_test.shape)
-# x_train = np.asarray(x_train, dtype=object)
-# print(x_train.shape)
-
-# x_train = np.reshape(x_train, (1, len(x_train)))
-
-# batchSize = 10
-# learningRate = 0.01
-# stepsPerEpoch = int(x_train.shape[0]/batchSize)
-# epochs = 20
-# layers = [len(x_train), 128, 128, 2]
-# ffn = GBFFN(layers, epochs, learningRate)
-# # print(rnn.predict(x_test, y_test))
-# metrics = ffn.trainModel(x_train, y_train, x_test, y_test)
-# print("Average loss:", np.average(metrics['trainingLoss']), "Average accuracy:", np.average(metrics['accuracy']))
-
-x_train_edges, train_node_features = [], []
+x_train_edges, train_node_encodings, train_node_types, train_nodes = [], [], [], []
 index = 0
+
 for graph in x_train_graph:
-    x_train_edges.append(list(graph.edges))
-    train_node_features.append(list(graph.nodes.data()))
+    myList = [graph[edge0][edge1]['hashed'] for edge0, edge1 in graph.edges]
+    x_train_edges.append(myList)
+    train_nodes.append(list(graph.nodes))
+
+    encodings, types = [], []
+    nodeList = graph.nodes(data ='encoding')
+    nodeTypes = graph.nodes(data ='nodeType')
+    for item, hashed in nodeList:
+        encodings.append(hashed)
+    train_node_encodings.append(encodings)
+
+    for item, nodeType in nodeTypes:
+        types.append(nodeType)
+    train_node_types.append(types)
 
 
 # print(train_node_features)
 index_edges = x_train_edges[index]
-index_node_features = train_node_features[index]
+index_node = train_node_encodings[index]
 index_graph = x_train_graph[index]
+index_types = train_node_types[index]
 
-graphData = (index_graph, index_edges, index_node_features)
+graphData = (tf.convert_to_tensor(index_node), tf.convert_to_tensor(index_edges), index_graph, tf.convert_to_tensor(index_types))
 print(graphData)
-
+# print(index_graph)
+ 
+# nx.draw_networkx(index_graph)
+# plt.show()
 
 # class GBFFN(tf.keras.Model):
     
-
-# for graph in x_test_graph:
-#     x_test_edges.append(graph.edges)
-
-# print(nodeFeatures)
-
-
-
-
-
-# model = GCN(len(trainingDataLoader), 2, 2)
-# optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-
-# batchSize = 10
-# for graph in trainingDataLoader:
-#     pred = model(graph, sum(graph.batch_num_nodes()))
-#     loss = func.cross_entropy(pred, y_train_labels[i])
-#     optimizer.zero_grad()
-#     loss.backward()
-#     optimizer.step()
 

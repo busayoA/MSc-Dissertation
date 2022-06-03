@@ -68,24 +68,20 @@ def prepareGraphs(xGraph):
         for edge in edges:
             nodeTypeIndicator0 = 1
             nodeTypeIndicator1 = 1
-
             edgeTypeIndicator = 1
             node0 = edge[0]
             node1 = edge[1]
             if len(list(ast.iter_child_nodes(node1))) == 0:
                 nodeTypeIndicator1 = 2
                 edgeTypeIndicator = 2
-                # print(node1)
-            node0 = 1/hash(edge[0])/255.
-            node1 = 1/hash(edge[1])/255.
-            AST = ASTtoGraph()
             className0 = edge[0].__class__.__name__
             className1 = edge[1].__class__.__name__
-            if G.has_node(node0) is False:
-                G.add_node(node0, encoding = 1/hash(edge[0])/255., className = className0, nodeType = nodeTypeIndicator0)
-            if G.has_node(node1) is False:
-                G.add_node(node1, encoding = 1/hash(edge[1])/255., className = className1, nodeType = nodeTypeIndicator1)
-            G.add_edge(node0, node1, edgeType = edgeTypeIndicator)
+            
+            if G.has_node(edge[0]) is False:
+                G.add_node(edge[0], encoding = 1/hash(edge[0])/255., className = className0, nodeType = nodeTypeIndicator0)
+            if G.has_node(edge[1]) is False:
+                G.add_node(edge[1], encoding = 1/hash(edge[1])/255., className = className1, nodeType = nodeTypeIndicator1)
+            G.add_edge(edge[0], edge[1], hashed = [1/hash(edge[0])/255., 1/hash(edge[1])/255.], edgeType = edgeTypeIndicator)
         xList = nx.to_numpy_array(G)
         totalGraph.append(G)
         totalList.append(xList)
