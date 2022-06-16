@@ -1,5 +1,4 @@
 import os, ast, random
-from pydoc import classname
 import numpy as np
 import tensorflow as tf
 import networkx as nx
