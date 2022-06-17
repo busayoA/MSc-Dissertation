@@ -60,9 +60,18 @@ def convertToDGL(x_list):
         g = nx.DiGraph()
         edges = graph.edges
         for edge in edges:
-            g.add_edge(np.float64(1/hash(edge[0])/255.), np.float64(1/hash(edge[1])/255.))
+            node0, node1 = np.float64(1/hash(edge[0])/255.), np.float64(1/hash(edge[1])/255.)
+            nodeTypeIndicator0, nodeTypeIndicator1, edgeTypeIndicator = 1, 1, 1
+            if len(list(ast.iter_child_nodes(edge[1]))) == 0:
+                nodeTypeIndicator1 = 2
+                edgeTypeIndicator = 2
+            if g.has_node(node0) is False:
+                g.add_node(node0, encoding = 1/hash(edge[0])/255., nodeType = nodeTypeIndicator0)
+            if g.has_node(node1) is False:
+                g.add_node(node1, encoding = 1/hash(edge[1])/255., nodeType = nodeTypeIndicator1)
+            g.add_edge(node0, node1, edgeType = edgeTypeIndicator)
 
-        x_dgl.append(dgl.from_networkx(g))
+        x_dgl.append(dgl.from_networkx(g, node_attrs=['nodeType', 'encoding'], edge_attrs=['edgeType']))
 
     return x_dgl
 

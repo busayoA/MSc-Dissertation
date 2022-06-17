@@ -100,14 +100,14 @@ class ASTToGraph(ast.NodeVisitor):
     
 
 
-merge = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Sorting/Merge Sort/1.py"
-def readAST():
-    with open (merge, "r") as file:
-        return ast.parse(file.read())
+# merge = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Sorting/Merge Sort/1.py"
+# def readAST():
+#     with open (merge, "r") as file:
+#         return ast.parse(file.read())
 
-programAST = readAST()
+# programAST = readAST()
 
 
-node = ASTToGraph()
-body = node.visitModule(programAST)
-print(node.visitDef(body[1]))
+# node = ASTToGraph()
+# body = node.visitModule(programAST)
+# print(node.visitDef(body[1]))
