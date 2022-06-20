@@ -75,16 +75,47 @@ def convertToDGL(x_list):
 
     return x_dgl
 
+def getEdges(x_list):
+    edgeList = []
+    for graph in x_list[:1]:
+        currentEdges = []
+        edges = graph.edges
+        # print(edges)
+        for edge in edges:
+            node0, node1 = np.float32(1/hash(edge[0])/255.), np.float32(1/hash(edge[1])/255.)
+            currentEdges.append([node0, node1])
+        edgeList.append(currentEdges)
+    
+    return edgeList
+
+def convertToMatrix(x_list):
+    graphs = []
+    for graph in x_list:
+        graph = nx.to_numpy_array(graph)
+        graphs.append(graph)
+
+    return graphs
+
 def getParsedFiles():
     x_train, y_train, x_test, y_test = splitTrainTest()
 
+    x_train_edges = getEdges(x_train)
+    x_train_matrix = convertToMatrix(x_train)
+    x_train_edges = tf.convert_to_tensor(x_train_edges, dtype=np.float32)
     x_train = convertToDGL(x_train)
     y_train = tf.keras.utils.to_categorical(y_train)  
 
+    x_test_edges = [] #getEdges(x_test)
+    x_test_matrix = convertToMatrix(x_test)
+    # x_test_edges = tf.convert_to_tensor(x_test_edges)
     x_test = convertToDGL(x_test)
     y_test = tf.keras.utils.to_categorical(y_test)  
 
-    return x_train, y_train, x_test, y_test
+    return x_train, x_train_edges, x_train_matrix, y_train, x_test, x_test_edges, x_test_matrix, y_test
 
+
+# x_train, y_train, x_test, y_test = splitTrainTest()
+# x_train_edges = getEdges(x_train)
+# print(len(x_train_edges))
 # x_train, y_train, x_test, y_test = splitTrainTest()
 # print(convertToDGL(x_train))

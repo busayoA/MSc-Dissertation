@@ -8,7 +8,7 @@ from dgl.dataloading import GraphDataLoader
 from dgl.nn import GraphConv
 
 
-x_train, y_train, x_test, y_test = rf.getParsedFiles()
+x_train, x_train_edges, x_train_matrix, y_train, x_test, x_test_edges, x_test_matrix, y_test = rf.getParsedFiles()
 
 class TrainingData(DGLDataset):
     def __init__(self):
