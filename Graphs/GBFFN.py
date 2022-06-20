@@ -1,9 +1,6 @@
-from cgi import test
-import dgl, torch
 import tensorflow as tf
 import numpy as np
-import createDatasets as cd
-from dgl.dataloading import GraphDataLoader
+import InputLayer as InputLayer
 
 
 class FeedForwardNetwork:
@@ -32,7 +29,7 @@ class FeedForwardNetwork:
         adjList = tf.convert_to_tensor(x_train_matrix, dtype=np.float32)
         x = []
 
-        # Get the node embeddings
+        # Get the node embeddings as a function of the adjacency matrix on each node
         for i in range(len(nodes)):
             node = tf.Variable(nodes[i])
             embedding = sum(nodes[i] * adjList)
@@ -77,17 +74,12 @@ class FeedForwardNetwork:
 # print('The original graphs in the minibatch:')
 # print(graphs)
 
-x_train = cd.trainingData
-x_train_edges = cd.x_train_edges
-x_train_matrix = cd.x_train_matrix
+
 
 # print(len())
 
 # print(x_train_edges[0])
 # print(len(x_train))
-
-ffn = FeedForwardNetwork([158, 128, 128, 2], 10, 0.001)
-ffn.propagate(x_train[0], x_train_edges[0], x_train_matrix[0][0])
 # train_dataloader = GraphDataLoader(x_train, batch_size=5, drop_last=False)
 # test_dataloader = GraphDataLoader(x_test, batch_size=5, drop_last=False)
 
