@@ -10,15 +10,10 @@ class Visitor(ast.NodeVisitor):
         self.edges = []
         self.adjList = []
 
-    def getClassName(self, node):
-        className = '' + node.__class__.__name__
-        visitor = getattr(self, className, self.generic_visit)
-        return visitor(node)
-
     def generic_visit(self, node):
         if node not in self.nodes:
             nodeEmbedding = self.visitSpecial(node)
-            nodeEmbedding = 1/hash(node) + 1/hash(nodeEmbedding) * 0.001
+            nodeEmbedding = 1/hash(node) + 1/hash(nodeEmbedding) * 0.005
             self.nodes.append(nodeEmbedding)
 
         if isinstance(node, ast.AST):
