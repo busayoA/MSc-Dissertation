@@ -1,3 +1,6 @@
+import networkx as nx
+import tensorflow as tf
+import numpy as np
 from GraphInputLayer import GraphInputLayer
 
 class BinaryGraphInputLayer(GraphInputLayer):
@@ -15,6 +18,6 @@ class BinaryGraphInputLayer(GraphInputLayer):
         
         return x_train, y_train, x_test, y_test
 
-
+    
             
     
