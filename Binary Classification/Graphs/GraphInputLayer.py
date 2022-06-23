@@ -62,6 +62,8 @@ class GraphInputLayer(ABC):
         adjList = nx.dfs_successors(x_train)
         adjacencies = []
         for i in range(len(embeddings)):
+            if i % 10 == 0:
+                print(end=".")
             node = embeddings[i]
             matrix = x_matrix[i]
             x = sum(node * matrix)
@@ -77,6 +79,3 @@ class GraphInputLayer(ABC):
         
         return embeddings, adjacencies
             
-
-            
-    

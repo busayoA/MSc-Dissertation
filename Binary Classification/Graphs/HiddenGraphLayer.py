@@ -16,12 +16,10 @@ class HiddenGraphLayer():
         elif layerName == 'lstm':
             return tf.keras.layers.LSTM(neurons, activation=activationFunction, use_bias=useBias)
         elif layerName == 'ffn':
-            return self.MLPLayer(1, [neurons], activationFunction)
+            return self.MLPLayer(2, [neurons, neurons], activationFunction)
         elif layerName == 'dropout':
             return self.addDropoutLayer(dropoutRate)
         elif layerName == 'output':
-            return self.addDenseLayer(neurons, activationFunction, useBias)
-        else:
             return self.addDenseLayer(neurons, activationFunction, useBias)
 
     def MLPLayer(self, hiddenLayerCount: int, hiddenLayerUnits: List[int], activationFunction):
@@ -49,7 +47,7 @@ class HiddenGraphLayer():
             return tf.nn.relu
         elif activationFunction == 'tanh':
             return tf.tanh
-        else:
+        elif activationFunction == 'logsigmoid':
             def logSigmoid(x):
                 weights = tf.Variable(tf.random.normal(shape=(len(x), 2)), dtype=np.float32)
                 bias = tf.Variable(tf.random.normal(shape=(2, 1)), dtype=np.float32)

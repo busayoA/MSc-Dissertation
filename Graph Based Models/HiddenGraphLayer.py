@@ -15,7 +15,7 @@ class HiddenGraphLayer():
         elif layerName == 'lstm':
             return tf.keras.layers.LSTM(neurons, activation=activationFunction, use_bias=useBias)
         elif layerName == 'ffn':
-            return self.MLPLayer(1, [neurons], activationFunction)
+            return self.MLPLayer(2, [neurons, neurons], activationFunction)
         elif layerName == 'dropout':
             return self.addDropoutLayer(dropoutRate)
         elif layerName == 'output':

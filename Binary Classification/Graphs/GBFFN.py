@@ -10,20 +10,26 @@ quick = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/
 inputLayer = BGIL()
 xTrain, yTrain, xTest, yTest = inputLayer.splitTrainTest(merge, quick)
 x_train, x_train_matrix, y_train, x_test, x_test_matrix, y_test = inputLayer.getDatasets(xTrain, yTrain, xTest, yTest)
-xTrainTest, xTrainTestAdj = inputLayer.getAdjacencyLists(x_train[0], x_train_matrix[0])
+# x_train_0 = inputLayer.getAdjacencyLists(x_train[0], x_train_matrix[0])
 
-hiddenFFNLayer1 = HGL(0.03)
+print("Collecting node embeddings and adjacency lists")
+x_train_adj = [0] * len(x_train)
+for i in range(len(x_train)):
+    x_train[i], x_train_adj[i] = inputLayer.getAdjacencyLists(x_train[i], x_train_matrix[i])
+
+ffnModel = HGL(0.03)
 layerName = "ffn"
 activationFunction = "logSigmoid"
 
-def graphFFNLayer(layerName, activationFunction, xTrain, xTrainAdjacencies):
-    ffnLayer = hiddenFFNLayer1.getLayer(128, layerName, activationFunction, True)
-    # print(ffnLayer)
+def graphFFNLayer(layerName, activationFunction, x_train_tuple):
+    # ffnLayers = ffnModel.getLayer(128, layerName, activationFunction, True)
+    
+    # hidden1 = ffnLayers[0]
+    # hidden2 = ffnLayers[1]
+    print(x_train_tuple[0][0])
 
 
-
-
-graphFFNLayer(layerName, activationFunction, xTrainTest, xTrainTestAdj)
+graphFFNLayer(layerName, activationFunction, x_train[0])
 # out = hiddenLayer.forwardPropagate(x_train[0], x_train_matrix[0])
 # loss = hiddenLayer.lossFunction(out, y_train[0])
 # print(loss.numpy())
