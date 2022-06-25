@@ -2,45 +2,58 @@ import tensorflow as tf
 import networkx as nx
 import numpy as np
 from typing import List
-from BinaryGraphInputLayer import BinaryGraphInputLayer as BGIL
 
 class HiddenGraphLayer():
-    def __init__(self, learningRate):
+    def __init__(self, learningRate, layerName: str, activationFunction: str, neurons:int, dropoutRate: float, hiddenLayerCount: int = None, hiddenLayerUnits: List[int] =
+    None):
         self.learningRate = learningRate
+        self.layerName = layerName.lower()
+        self.activationFuntion = activationFunction
+        self.neurons = neurons
+        self.dropoutRate = dropoutRate
+        self.hiddenLayerCount = hiddenLayerCount
+        self.hiddenLayerUnits = hiddenLayerUnits
 
-    def getLayer(self, neurons: int, layerName: str, activationFunction: str, useBias: bool, dropoutRate=None):
-        activationFunction = self.testActivationTypes(activationFunction)
-        layerName = layerName.lower()
-        if layerName == 'rnn':
-            return tf.keras.layers.SimpleRNN(neurons, activation=activationFunction, use_bias=useBias)
-        elif layerName == 'lstm':
-            return tf.keras.layers.LSTM(neurons, activation=activationFunction, use_bias=useBias)
-        elif layerName == 'ffn':
-            return self.MLPLayer(2, [neurons, neurons], activationFunction)
-        elif layerName == 'dropout':
-            return self.addDropoutLayer(dropoutRate)
-        elif layerName == 'output':
-            return self.addDenseLayer(neurons, activationFunction, useBias)
+    def chooseModel(self):
+        if self.layerName == "feedforward":
+            return self.FFLayer(self.hiddenLayerCount, self.hiddenLayerUnits, self.activationFuntion)
+        elif self.layerName == "rnn":
+            return self.RNNLayer(self.neurons, self.activationFuntion, True, self.dropoutRate)
+        elif self.layerName == "lstm":
+            return self.LSTMLayer(self.neurons, self.activationFuntion, True, self.dropoutRate)
+        elif self.layerName == "dropout":
+            return self.DropoutLayer(self.dropoutRate)
+        elif self.layerName == "dense":
+            return self.DenseLayer(self.neurons, self.activationFuntion, True)
 
-    def MLPLayer(self, hiddenLayerCount: int, hiddenLayerUnits: List[int], activationFunction):
+    def RNNLayer(self, neurons: int, activationFunction: str, useBias: bool, dropoutRate: float):
+        activationFunction = self.getActivationFunction(activationFunction)
+        return tf.keras.layers.SimpleRNN(neurons, activation=activationFunction, use_bias=useBias, dropout=dropoutRate)
+
+    def LSTMLayer(self, neurons: int, activationFunction: str, useBias: bool, dropoutRate: float):
+        activationFunction = self.getActivationFunction(activationFunction)
+        return tf.keras.layers.LSTM(neurons, activation=activationFunction, use_bias=useBias, dropout=dropoutRate)
+
+    def FFLayer(self, hiddenLayerCount: int, hiddenLayerUnits: List[int], activationFunction: str):
+        activationFunction = self.getActivationFunction(activationFunction)
         if len(hiddenLayerUnits) != hiddenLayerCount:
             raise Exception("Something is wrong somewhere, check that again")
 
         self.layers = []
         for i in range(hiddenLayerCount): 
-            self.layers.append(self.addDenseLayer(hiddenLayerUnits[i], useBias=True, activationFunction=activationFunction))
+            self.layers.append(self.DenseLayer(hiddenLayerUnits[i], useBias=True, activationFunction=activationFunction))
         return self.layers
 
-    def addDropoutLayer(self, dropoutRate):
+    def DropoutLayer(self, dropoutRate):
         if dropoutRate is None:
             dropoutRate = 0.3
         return tf.keras.layers.Dropout(dropoutRate)
 
-    def addDenseLayer(self, neurons: int, activationFunction: str, useBias: bool):
+    def DenseLayer(self, neurons: int, activationFunction: str, useBias: bool):
+        activationFunction = self.getActivationFunction(activationFunction)
         return tf.keras.layers.Dense(neurons, activationFunction, useBias)
 
-    def testActivationTypes(self, activationFunction: str):
-        activationFunction = activationFunction.lower()
+    def getActivationFunction(self, activationFunction: str):
         if activationFunction == 'softmax':
             return tf.nn.softmax
         elif activationFunction == 'relu':
@@ -55,4 +68,6 @@ class HiddenGraphLayer():
                 x = 1.0/(1.0 + tf.math.exp(-x)) 
                 return x
             return logSigmoid
+        else:
+            return None
 

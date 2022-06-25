@@ -1,3 +1,4 @@
+import imp
 import os, ast
 import numpy as np
 import tensorflow as tf
@@ -6,6 +7,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from Visitor import Visitor
 from abc import ABC, abstractmethod
+from os.path import dirname, join
 
 class GraphInputLayer(ABC):
     def convertToGraph(self, filePath):
@@ -19,6 +21,8 @@ class GraphInputLayer(ABC):
         return graph
 
     def assignLabels(self, filePath):
+        current_dir = dirname(__file__)
+        filePath = join(current_dir, filePath)
         graphs, labels = [], []
         os.chdir(filePath)
         for file in os.listdir():
@@ -41,12 +45,12 @@ class GraphInputLayer(ABC):
         raise NotImplementedError()
 
     def convertToMatrix(self, x_list):
-        graphs = []
+        matrices = []
         for graph in x_list:
-            graph = nx.to_numpy_array(graph)
-            graph = tf.convert_to_tensor(graph, dtype=np.float32)
-            graphs.append(graph)
-        return graphs
+            matrix = nx.to_numpy_array(graph)
+            # matrix = tf.convert_to_tensor(matrix, dtype=np.float32)
+            matrices.append(matrix)
+        return matrices
 
     def getDatasets(self, x_train, y_train, x_test, y_test):
         x_train_matrix = self.convertToMatrix(x_train)
@@ -61,21 +65,18 @@ class GraphInputLayer(ABC):
         embeddings = list(x_train.nodes)
         adjList = nx.dfs_successors(x_train)
         adjacencies = []
+        
+        # embeddings = [ for i in range(len(embeddings))]
+        print(end=".")
         for i in range(len(embeddings)):
-            if i % 10 == 0:
-                print(end=".")
             node = embeddings[i]
-            matrix = x_matrix[i]
-            x = sum(node * matrix)
-            embeddings[i] = x
-            embeddings[i] = tf.convert_to_tensor(embeddings[i], dtype=np.float32)  
+            embeddings[i] = sum(embeddings[i] * x_matrix[i])
+            #  = x
+            # embeddings[i] = tf.convert_to_tensor(embeddings[i], dtype=np.float32)  
 
             for item in adjList:
                 if node == item:
-                    adjacentNodes = tf.convert_to_tensor(adjList[item], dtype=np.float32)
-                    adjacencies.append(adjacentNodes)
-                    
-        x = tf.reshape(embeddings, (1, len(embeddings)))
+                    adjacencies.append([embeddings[i], adjList[item]])
         
         return embeddings, adjacencies
             
