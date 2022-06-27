@@ -4,7 +4,7 @@ import numpy as np
 from typing import List
 
 class HiddenGraphLayer():
-    def __init__(self, learningRate, layerName: str, activationFunction: str, neurons:int, dropoutRate: float, hiddenLayerCount: int = None, hiddenLayerUnits: List[int] =
+    def __init__(self, learningRate, layerName: str, activationFunction: str, neurons:int, dropoutRate: float =  None, hiddenLayerCount: int = None, hiddenLayerUnits: List[int] =
     None):
         self.learningRate = learningRate
         self.layerName = layerName.lower()
@@ -23,7 +23,7 @@ class HiddenGraphLayer():
             return self.LSTMLayer(self.neurons, self.activationFuntion, True, self.dropoutRate)
         elif self.layerName == "dropout":
             return self.DropoutLayer(self.dropoutRate)
-        elif self.layerName == "dense":
+        elif self.layerName == "output":
             return self.DenseLayer(self.neurons, self.activationFuntion, True)
 
     def RNNLayer(self, neurons: int, activationFunction: str, useBias: bool, dropoutRate: float):
@@ -51,7 +51,7 @@ class HiddenGraphLayer():
 
     def DenseLayer(self, neurons: int, activationFunction: str, useBias: bool):
         activationFunction = self.getActivationFunction(activationFunction)
-        return tf.keras.layers.Dense(neurons, activationFunction, useBias)
+        return tf.keras.layers.Dense(neurons, activationFunction, useBias, input_shape = (2, 2))
 
     def getActivationFunction(self, activationFunction: str):
         if activationFunction == 'softmax':

@@ -1,9 +1,14 @@
 import os
 import tensorflow as tf
 from sklearn.feature_extraction.text import CountVectorizer
+from os.path import dirname, join
 
-merge = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Sorting/Merge Sort"
-quick = "/Users/olubusayoakeredolu/Library/Mobile Documents/com~apple~CloudDocs/GitHub/Dissertation/Data/Sorting/Quick Sort"
+current_dir = dirname(__file__)
+merge = "./Data/Merge Sort"
+quick = "./Data/Quick Sort"
+
+merge = join(current_dir, merge)
+quick = join(current_dir, quick)
 
 def readFile(filePath):
     with open(filePath, 'r') as f:

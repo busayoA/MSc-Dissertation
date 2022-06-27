@@ -65,18 +65,17 @@ class GraphInputLayer(ABC):
         embeddings = list(x_train.nodes)
         adjList = nx.dfs_successors(x_train)
         adjacencies = []
-        
         # embeddings = [ for i in range(len(embeddings))]
         print(end=".")
         for i in range(len(embeddings)):
             node = embeddings[i]
             embeddings[i] = sum(embeddings[i] * x_matrix[i])
+
+            for item in adjList:
+                if item == node:
+                    adjacencies.append([embeddings[i], node, adjList[item]])
             #  = x
             # embeddings[i] = tf.convert_to_tensor(embeddings[i], dtype=np.float32)  
 
-            for item in adjList:
-                if node == item:
-                    adjacencies.append([embeddings[i], adjList[item]])
-        
         return embeddings, adjacencies
             
