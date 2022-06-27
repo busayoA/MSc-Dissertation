@@ -2,6 +2,10 @@ import tensorflow as tf
 import networkx as nx
 import numpy as np
 from typing import List
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.linear_model import SGDClassifier
+from sklearn.svm import LinearSVC
+from sklearn.pipeline import Pipeline
 
 class HiddenGraphLayer():
     def __init__(self, learningRate, layerName: str, activationFunction: str, neurons:int, dropoutRate: float =  None, hiddenLayerCount: int = None, hiddenLayerUnits: List[int] =
@@ -15,24 +19,42 @@ class HiddenGraphLayer():
         self.hiddenLayerUnits = hiddenLayerUnits
 
     def chooseModel(self):
-        if self.layerName == "feedforward":
+        if self.layerName == "ffn":
             return self.FFLayer(self.hiddenLayerCount, self.hiddenLayerUnits, self.activationFuntion)
         elif self.layerName == "rnn":
             return self.RNNLayer(self.neurons, self.activationFuntion, True, self.dropoutRate)
         elif self.layerName == "lstm":
             return self.LSTMLayer(self.neurons, self.activationFuntion, True, self.dropoutRate)
+        # elif self.layerName == "sgd":
+        #     return self.SGDClassifier()
+        # elif self.layerName == "svm":
+        #     return self.SVMClassifier()
         elif self.layerName == "dropout":
             return self.DropoutLayer(self.dropoutRate)
         elif self.layerName == "output":
             return self.DenseLayer(self.neurons, self.activationFuntion, True)
 
+    def SGDClassifier(trainSet, trainCategories, testSet):
+        text_clf = Pipeline([('vect', CountVectorizer(min_df=5)),('tfidf', TfidfTransformer()),('clf', SGDClassifier())])
+        text_clf.fit(trainSet, trainCategories)
+
+        predictions = text_clf.predict(testSet)
+        return predictions
+
+    def SVMClassifier(trainSet, trainCategories, testSet):
+        text_clf = Pipeline([('vect', CountVectorizer(min_df=5)),('tfidf', TfidfTransformer()),('clf', LinearSVC())])
+        text_clf.fit(trainSet, trainCategories)
+
+        predictions = text_clf.predict(testSet)
+        return predictions
+
     def RNNLayer(self, neurons: int, activationFunction: str, useBias: bool, dropoutRate: float):
         activationFunction = self.getActivationFunction(activationFunction)
-        return tf.keras.layers.SimpleRNN(neurons, activation=activationFunction, use_bias=useBias, dropout=dropoutRate)
+        return tf.keras.layers.SimpleRNN(neurons, activation=activationFunction, use_bias=useBias)
 
     def LSTMLayer(self, neurons: int, activationFunction: str, useBias: bool, dropoutRate: float):
         activationFunction = self.getActivationFunction(activationFunction)
-        return tf.keras.layers.LSTM(neurons, activation=activationFunction, use_bias=useBias, dropout=dropoutRate)
+        return tf.keras.layers.LSTM(neurons, activation=activationFunction, use_bias=useBias)
 
     def FFLayer(self, hiddenLayerCount: int, hiddenLayerUnits: List[int], activationFunction: str):
         activationFunction = self.getActivationFunction(activationFunction)

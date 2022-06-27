@@ -2,6 +2,7 @@ import networkx as nx
 import tensorflow as tf
 import numpy as np
 from GraphInputLayer import GraphInputLayer
+from os.path import dirname, join
 
 class BinaryGraphInputLayer(GraphInputLayer):
     def splitTrainTest(self, file1, file2, file3=None):
@@ -18,6 +19,19 @@ class BinaryGraphInputLayer(GraphInputLayer):
         
         return x_train, y_train, x_test, y_test
 
-    
+    def readFiles(self):
+        current_dir = dirname(__file__)
+
+        merge = "./Data/Merge Sort"
+        quick = "./Data/Quick Sort"
+
+        merge = join(current_dir, merge)
+        quick = join(current_dir, quick)
+
+        xTrain, yTrain, xTest, yTest = self.splitTrainTest(merge, quick)
+        x_train_nodes, x_train_matrix, y_train, x_test_nodes, x_test_matrix, y_test = self.getDatasets(xTrain, yTrain, xTest, yTest)
+
+        return x_train_nodes, x_train_matrix, y_train, x_test_nodes, x_test_matrix, y_test
+
             
     

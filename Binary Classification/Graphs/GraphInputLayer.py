@@ -5,7 +5,7 @@ import tensorflow as tf
 import networkx as nx
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from Visitor import Visitor
+from GraphVisitor import Visitor
 from abc import ABC, abstractmethod
 from os.path import dirname, join
 
@@ -65,7 +65,6 @@ class GraphInputLayer(ABC):
         embeddings = list(x_train.nodes)
         adjList = nx.dfs_successors(x_train)
         adjacencies = []
-        # embeddings = [ for i in range(len(embeddings))]
         print(end=".")
         for i in range(len(embeddings)):
             node = embeddings[i]
@@ -74,8 +73,47 @@ class GraphInputLayer(ABC):
             for item in adjList:
                 if item == node:
                     adjacencies.append([embeddings[i], node, adjList[item]])
-            #  = x
-            # embeddings[i] = tf.convert_to_tensor(embeddings[i], dtype=np.float32)  
-
         return embeddings, adjacencies
-            
+
+    @abstractmethod
+    def readFiles(self):
+        raise NotImplementedError()
+
+    
+    def prepareData(self, x_list, x_matrix):
+        exitGraph = []
+        x_nodes = x_list
+        print("Collecting node embeddings and adjacency lists")
+        adj = [0] * len(x_list)
+        for i in range(len(x_list)):
+            x_list[i], adj[i] = self.getAdjacencyLists(x_list[i], x_matrix[i])
+
+        # for i in range(len(x_list)):
+        #     x_list[i] = tf.convert_to_tensor(x_list[i], dtype=np.float32)
+
+        index = 0
+        for graph in x_list:  
+            finalWorkingGraph = []
+            adjacencies = adj[index]
+            originalNodes = x_nodes[index]
+            nodesWithAdjacentNodes = [adjacencies[i][1] for i in range(len(adjacencies))]
+            adjacentNodes = [adjacencies[i][2] for i in range(len(adjacencies))]
+
+            for i in range(len(graph)):
+                currentNode = originalNodes[i]
+                if currentNode in nodesWithAdjacentNodes:
+                    workingValues = [currentNode]
+                    ind = nodesWithAdjacentNodes.index(currentNode)
+                    adjNodes = adjacentNodes[ind]
+                    for j in range(len(adjNodes)):
+                        workingValues.append(adjNodes[j])
+
+                    workingValues = tf.convert_to_tensor(workingValues, dtype=np.float32)
+                    x = tf.math.reduce_mean(tf.math.log(workingValues))
+                    finalWorkingGraph.append(x)
+                else:
+                    finalWorkingGraph.append(tf.convert_to_tensor(graph[i], dtype=np.float32))
+            exitGraph.append(tf.convert_to_tensor(finalWorkingGraph))
+            index += 1
+
+        return exitGraph
