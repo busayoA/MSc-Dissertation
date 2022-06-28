@@ -2,7 +2,8 @@ import tensorflow as tf
 import numpy as np
 from statistics import mean
 from keras.models import Sequential
-from keras.layers import Input
+from keras.layers import Input, Bidirectional, Dense
+from torch import lstm
 from BinaryGraphInputLayer import BinaryGraphInputLayer as BGIL
 from HiddenGraphLayer import HiddenGraphLayer as HGL
 
@@ -21,29 +22,26 @@ def GBLSTMModel(x_train, y_train, hiddenActivationFunction):
         
         y = tf.convert_to_tensor(y)
 
-        dimensions = tf.shape(graphs, out_type=np.int32)
-
-        graphs = np.reshape(graphs, (2, dimensions[1]))
         graphs = tf.convert_to_tensor(graphs, dtype=np.float32)
+        dimensions = tf.shape(graphs[0], out_type=np.int32)
 
+        
         lstmLayer1 = HGL(0.003, "lstm", hiddenActivationFunction, 64, 0.3, 2, [64, 64])
-        lstmLayer1 = lstmLayer1.chooseModel()
-
+        lstmLayer1 = lstmLayer1.chooseModel((dimensions[0], ))
+        # lstmLayer1 = LSTM(64, input_shape=(dimensions[0], dimensions[1]))
         lstmLayer2 = HGL(0.003, "lstm", hiddenActivationFunction, 64, 0.3, 2, [64, 64])
+        lstmLayer2 = lstmLayer2.chooseModel((dimensions[0], 1))
         dropout = HGL(0.003, "dropout", "relu", 64, 0.3)
         output = HGL(0.003, "output", "relu", 2)
         model = Sequential()
-        model.add(Input(shape=(dimensions[1], )))
-        model.add(lstmLayer1)
-        model.add(dropout)
-        model.add(lstmLayer2.chooseModel())
+        model.add(Input(shape=(dimensions[0], 1)))
+        model.add(Bidirectional(lstmLayer1))
+        model.add(dropout.chooseModel())
         model.add(output.chooseModel())
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
         model.summary()
         
-
-
         history = model.fit(graphs, y, epochs=10)
 
         accuracy.append(mean(history.history['accuracy']))

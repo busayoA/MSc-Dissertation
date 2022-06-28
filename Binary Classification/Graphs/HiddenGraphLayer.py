@@ -18,20 +18,20 @@ class HiddenGraphLayer():
         self.hiddenLayerCount = hiddenLayerCount
         self.hiddenLayerUnits = hiddenLayerUnits
 
-    def chooseModel(self):
+    def chooseModel(self, inputShape: tuple = None, returnSequences:bool = None):
         if self.layerName == "ffn":
             return self.FFLayer(self.hiddenLayerCount, self.hiddenLayerUnits, self.activationFuntion)
         elif self.layerName == "rnn":
-            return self.RNNLayer(self.neurons, self.activationFuntion, True, self.dropoutRate)
+            return self.RNNLayer(self.neurons, self.activationFuntion, True)
         elif self.layerName == "lstm":
-            return self.LSTMLayer(self.neurons, self.activationFuntion, True, self.dropoutRate)
+            return self.LSTMLayer(self.neurons, self.activationFuntion, True, inputShape, returnSequences)
         # elif self.layerName == "sgd":
         #     return self.SGDClassifier()
         # elif self.layerName == "svm":
         #     return self.SVMClassifier()
         elif self.layerName == "dropout":
             return self.DropoutLayer(self.dropoutRate)
-        elif self.layerName == "output":
+        elif self.layerName == "output" or self.layerName == "dense":
             return self.DenseLayer(self.neurons, self.activationFuntion, True)
 
     def SGDClassifier(trainSet, trainCategories, testSet):
@@ -48,13 +48,13 @@ class HiddenGraphLayer():
         predictions = text_clf.predict(testSet)
         return predictions
 
-    def RNNLayer(self, neurons: int, activationFunction: str, useBias: bool, dropoutRate: float):
+    def RNNLayer(self, neurons: int, activationFunction: str, useBias: bool):
         activationFunction = self.getActivationFunction(activationFunction)
         return tf.keras.layers.SimpleRNN(neurons, activation=activationFunction, use_bias=useBias)
 
-    def LSTMLayer(self, neurons: int, activationFunction: str, useBias: bool, dropoutRate: float):
+    def LSTMLayer(self, neurons: int, activationFunction: str, useBias: bool, inputShape, returnSequences):
         activationFunction = self.getActivationFunction(activationFunction)
-        return tf.keras.layers.LSTM(neurons, activation=activationFunction, use_bias=useBias)
+        return tf.keras.layers.LSTM(neurons, activation=activationFunction, use_bias=useBias, return_sequences=returnSequences, input_shape=inputShape)
 
     def FFLayer(self, hiddenLayerCount: int, hiddenLayerUnits: List[int], activationFunction: str):
         activationFunction = self.getActivationFunction(activationFunction)
@@ -66,6 +66,21 @@ class HiddenGraphLayer():
             self.layers.append(self.DenseLayer(hiddenLayerUnits[i], useBias=True, activationFunction=activationFunction))
         return self.layers
 
+    def chooseCell(self):
+        if self.layerName == "lstmcell":
+            return self.LSTMCell(self.neurons, self.activationFuntion, True)
+        elif self.layerName == "rnncell":
+            return self.RNNCell(self.neurons, self.activationFuntion, True)
+
+    def RNNCell(self, neurons: int, activationFunction: str, useBias: bool):
+        activationFunction = self.getActivationFunction(activationFunction)
+        return tf.keras.layers.SimpleRNNCell(neurons, activation=activationFunction, use_bias=useBias)
+
+    def LSTMCell(self, neurons: int, activationFunction: str, useBias: bool, inputShape):
+        activationFunction = self.getActivationFunction(activationFunction)
+        return tf.keras.layers.LSTMCell(neurons, activation=activationFunction, use_bias=useBias, input_shape=inputShape)
+
+
     def DropoutLayer(self, dropoutRate):
         if dropoutRate is None:
             dropoutRate = 0.3
@@ -74,6 +89,10 @@ class HiddenGraphLayer():
     def DenseLayer(self, neurons: int, activationFunction: str, useBias: bool):
         activationFunction = self.getActivationFunction(activationFunction)
         return tf.keras.layers.Dense(neurons, activationFunction, useBias, input_shape = (2, 2))
+
+
+
+
 
     def getActivationFunction(self, activationFunction: str):
         if activationFunction == 'softmax':

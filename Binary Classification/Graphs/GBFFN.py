@@ -18,11 +18,11 @@ def GBFFNModel(x_train, y_train, hiddenActivationFunction):
         graphs = [graph, graph]
         y = [y_train[index], y_train[index]]
 
-        dimensions = tf.shape(graphs, out_type=np.int32)
+        dimensions = tf.shape(graphs[0], out_type=np.int32)
         ffLayer = HGL(0.003, "ffn", hiddenActivationFunction, 64, 0.3, 2, [64, 64])
         output = HGL(0.003, "output", "relu", 2)
         model = Sequential()
-        model.add(Input(shape=(dimensions[1], )))
+        model.add(Input(shape=(dimensions[0], )))
         for i in range(2):
             model.add(ffLayer.chooseModel()[i])
         model.add(output.chooseModel())
@@ -31,7 +31,7 @@ def GBFFNModel(x_train, y_train, hiddenActivationFunction):
         # model.summary()
         y = tf.convert_to_tensor(y)
 
-        graphs = np.reshape(graphs, (2, dimensions[1]))
+        # graphs = np.reshape(graphs, (2, dimensions[1]))
         graphs = tf.convert_to_tensor(graphs, dtype=np.float32)
         history = model.fit(graphs, y, epochs=10)
 
