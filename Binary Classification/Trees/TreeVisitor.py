@@ -3,7 +3,7 @@ import re
 import networkx as nx
 import tensorflow as tf
 import numpy as np
-from ete import Tree
+from ete3 import Tree
 
 class Visitor(ast.NodeVisitor):
     def __init__(self):

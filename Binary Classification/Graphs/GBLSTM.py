@@ -2,8 +2,7 @@ import tensorflow as tf
 import numpy as np
 from statistics import mean
 from keras.models import Sequential
-from keras.layers import Input, Bidirectional, Dense
-from torch import lstm
+from keras.layers import Input, Bidirectional
 from BinaryGraphInputLayer import BinaryGraphInputLayer as BGIL
 from HiddenGraphLayer import HiddenGraphLayer as HGL
 
