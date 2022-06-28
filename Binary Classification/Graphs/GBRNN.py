@@ -1,16 +1,14 @@
-#!/usr/local/bin/python3
 import tensorflow as tf
 import numpy as np
 from statistics import mean
 from keras.models import Sequential
-from keras.layers import Input, Bidirectional, Dense
+from keras.layers import Input
 from BinaryGraphInputLayer import BinaryGraphInputLayer as BGIL
 from HiddenGraphLayer import HiddenGraphLayer as HGL
 
 bgil = BGIL()
 x_train_nodes, x_train_matrix, y_train, x_test_nodes, x_test_matrix, y_test = bgil.readFiles()
 x_train = bgil.prepareData(x_train_nodes, x_train_matrix)
-
 
 def GBRNNModel(x_train, y_train, hiddenActivationFunction):
     index = 0
