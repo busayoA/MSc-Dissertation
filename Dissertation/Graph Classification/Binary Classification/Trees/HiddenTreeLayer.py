@@ -15,40 +15,13 @@ class HiddenTreeLayer:
         self.treeCount = len(trees)
         self.layerCount = len(self.layers)
         self.hiddenCount = self.layerCount-2
-        
-        self.activationFunction = self.getActivationFunction(activationFunction.lower())
+        self.activationFunction = activationFunction
         self.weights, self.bias, self.weightDeltas, self.biasDeltas = {}, {}, {}, {}
 
         # for i in range(self.layerCount):
         #     self.weights[i] = tf.Variable(tf.random.normal(shape=(self.layers[i], self.layers[i-1])))
         #     self.bias[i] = tf.Variable(tf.random.normal(shape=(self.layers[i], 1)))
 
-    def testModelOnOneTree(self, aggregationFunction: str):
-        """ Test the model on one tree """
-        self.tester = self.trees[0] 
-        self.testerTreeEmbeddings, self.testerTreeObjects = self.trees[0].preorderTraversal(self.trees[0])
-        nodeCount = len(self.testerTree)
-
-        # Create an LSTM cell for each node in the tree
-        for i in range(nodeCount):
-            currentNode = self.tester[i]
-            currentNodeEmbedding = currentNode.embedding
-            children = self.getDirectChildren(currentNode)[1]
-
-            for j in range(len(children)):
-                workingTensor = [currentNodeEmbedding, children[j]]
-                workingTensor = tf.convert_to_tensor(workingTensor, dtype=np.float32)
-                aggFunction = self.getAggregationFunction(aggregationFunction)
-                output = aggFunction(workingTensor)
-            currentNodeEmbedding = output
-
-            lstmCell = self.LSTMCell(64, self.activationFunction, False)
-            nodeOutput = lstmCell(currentNodeEmbedding)
-            
-        for i in range(self.layerCount):
-            self.weights[i] = tf.Variable(tf.random.normal(shape=(self.layers[i], self.layers[i-1])))
-            self.bias[i] = tf.Variable(tf.random.normal(shape=(self.layers[i], 1)))
-        
     def getDirectChildren(self, root: Node):
         childObjects = root.children
         childEmbeddings = []
@@ -57,14 +30,44 @@ class HiddenTreeLayer:
 
         return childObjects, childEmbeddings
 
-    def RNNCell(self, neurons: int, activationFunction: function, useBias: bool):
-        return tf.keras.layers.SimpleRNNCell(neurons, activation=activationFunction, use_bias=useBias)
+    def forwardPassOneTree(self):
+        """ Test the model on one tree """
+        self.tester = self.trees[0] 
+        self.testerTreeEmbeddings, self.testerTreeObjects = self.trees[0].preorderTraversal(self.trees[0])
+        nodeCount = len(self.testerTreeEmbeddings)
 
-    def LSTMCell(self, neurons: int, activationFunction: function, useBias: bool):
-        return tf.keras.layers.LSTMCell(neurons, activation=activationFunction, use_bias=useBias)
+        for i in range(nodeCount):
+            currentNode = self.testerTreeObjects[i]
+            children = self.getDirectChildren(currentNode)[1]
+            if len(children) > 0:
+                for j in range(len(children)):
+                    workingTensor = [self.testerTreeEmbeddings[i], children[j]]
+                    x = tf.math.reduce_mean(tf.math.log(workingTensor))
+                    self.testerTreeEmbeddings[i] = x
+            else:
+                self.testerTreeEmbeddings[i] = tf.convert_to_tensor(self.testerTreeEmbeddings[i])
 
-    def GRUCell(self, neurons: int, activationFunction: function, useBias: bool):
-        return tf.keras.layers.GRUCell(neurons, activation=activationFunction, use_bias=useBias)
+        #first layer:
+        self.testerTreeEmbeddings = tf.convert_to_tensor(self.testerTreeEmbeddings)
+        self.testerTreeEmbeddings = tf.reshape(self.testerTreeEmbeddings, (len(self.testerTreeEmbeddings), 1))
+        activationFunction = self.getActivationFunction(self.activationFunction)
+
+
+
+        self.weights = tf.Variable(tf.random.normal(shape=(len(self.testerTreeEmbeddings), 2)))
+        self.bias = tf.Variable(tf.random.normal(shape=(1, 2)))
+    
+        output = tf.matmul(tf.transpose(self.testerTreeEmbeddings), self.weights) + self.bias
+        output = activationFunction(output)
+
+        #second layer:
+
+
+
+        return output
+
+    def RNNLayer(self):
+        pass
 
     def getActivationFunction(self, activationFunction: str):
         if activationFunction == 'softmax':
@@ -83,6 +86,11 @@ class HiddenTreeLayer:
             return logSigmoid
         else:
             return None
+
+    def aggregationLayer(self, aggregationFunction: str, nodeEmbeddings: List):
+        nodeEmbeddings = tf.reshape(nodeEmbeddings, (1, len(nodeEmbeddings)))
+        aggregationFunction = self.getAggregationFunction(aggregationFunction)
+        return aggregationFunction(nodeEmbeddings, axis=1)
 
     def getAggregationFunction(self, aggregationFunction: str):
         aggregationFunction = aggregationFunction.lower()
@@ -118,9 +126,12 @@ class HiddenTreeLayer:
     #     return childNodes, children
 
     
+hiddenLayer = HiddenTreeLayer(x_train, y_train, [64, 128, 128, 2], "tanh")
+output = hiddenLayer.forwardPassOneTree()
+# testEmbeddings = hiddenLayer.testModelOnOneTree()
+# agg = hiddenLayer.aggregationLayer("sum", testEmbeddings)
 
-    
-hiddenLayer = HiddenTreeLayer()
+# x = hiddenLayer.forwardPass(testEmbeddings, "tanh")
 # print(hiddenLayer.traverseTreeBranch(x_train[0], []))
 
 root = Node(0.9)
