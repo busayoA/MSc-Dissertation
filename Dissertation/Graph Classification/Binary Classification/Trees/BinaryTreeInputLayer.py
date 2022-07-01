@@ -1,4 +1,5 @@
 import os, ast
+import tensorflow as tf
 from os.path import dirname, join
 
 def createTreeFromEdges(edges):
@@ -6,11 +7,15 @@ def createTreeFromEdges(edges):
     nodes = {embedding: Node(embedding) for embedding in nodeEdges}
 
     for parent, child in edges:
-        nodes[parent].children.append(nodes[child])
-        nodeEdges.remove(child)
+        if child not in nodes[parent].children:
+            nodes[parent].children.append(nodes[child])
+        if child in nodeEdges:
+            nodeEdges.remove(child)
     
     for edge in nodeEdges:
         return nodes[edge]
+
+    
 
 class BinaryTreeInputLayer():
     def convertToTree(self, filePath):
@@ -58,12 +63,11 @@ class BinaryTreeInputLayer():
 
         x_train = mergeTree[:mergeSplit] + quickTree[:quickSplit]
         y_train = mergeLabels[:mergeSplit] + quickLabels[:quickSplit]
+        y_train = tf.keras.utils.to_categorical(y_train)  
         
         x_test = mergeTree[mergeSplit:] + quickTree[quickSplit:]
         y_test = mergeLabels[mergeSplit:] + quickLabels[quickSplit:]
-
-        x_train = mergeTree + quickTree
-        y_train = mergeLabels + quickLabels
+        y_test = tf.keras.utils.to_categorical(y_test)  
 
         return x_train, y_train, x_test, y_test
 
@@ -162,3 +166,15 @@ class Node():
         self.embedding = embedding
         self.children = []
 
+    def preorderTraversal(self, root):
+        embeddingTree = []
+        objectTree = []
+
+        if root is not None:
+            embeddingTree.append(root.embedding)
+            objectTree.append(root)
+            for i in range(len(root.children)):
+                embeddingTree = embeddingTree + (self.preorderTraversal(root.children[i]))[0]
+                objectTree = objectTree + (self.preorderTraversal(root.children[i]))[1]
+
+        return list(set(embeddingTree)), list(set(objectTree))

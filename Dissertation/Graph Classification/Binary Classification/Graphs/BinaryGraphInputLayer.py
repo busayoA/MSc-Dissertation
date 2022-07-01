@@ -28,8 +28,6 @@ class BinaryGraphInputLayer():
                     labels.append(0)
                 elif filePath.find("Quick") != -1:
                     labels.append(1)
-                elif filePath.find("Other") != -1:
-                    labels.append(2)
         return graphs, labels
 
     def splitTrainTest(self, file1, file2):
