@@ -8,7 +8,7 @@ inputLayer = BTIL()
 x_train, y_train, x_test, y_test = inputLayer.getData()
 
 class HiddenTreeLayer:
-    def __init__(self, trees: List[Node], labels, layers, activationFunction: str):
+    def __init__(self, trees: List[Node], labels, layers, activationFunction: str, learningRate: float):
         self.trees = trees
         self.labels = labels
         self.layers = layers
@@ -16,6 +16,7 @@ class HiddenTreeLayer:
         self.layerCount = len(self.layers)
         self.hiddenCount = self.layerCount-2
         self.activationFunction = activationFunction
+        self.learningRate = learningRate
         self.weights, self.bias, self.weightDeltas, self.biasDeltas = {}, {}, {}, {}
 
         for i in range(self.treeCount):
@@ -78,11 +79,11 @@ class HiddenTreeLayer:
         aggregationFunction = self.getAggregationFunction(aggregationFunction)
         return aggregationFunction(nodeEmbeddings, axis=1)
 
-    def runFFNLayer(self, embeddings, activationFunction, aggregationFunction: str):
-        for tree in self.trees:
-            fullTree = tree.preorderTraversal(tree)
-            output = self.FFNCell(fullTree, activationFunction, aggregationFunction)
-        return output
+    # def runFFNLayer(self, embeddings, activationFunction, aggregationFunction: str):
+    #     for tree in self.trees:
+    #         fullTree = tree.preorderTraversal(tree)
+    #         output = self.FFNCell(fullTree, activationFunction, aggregationFunction)
+    #     return output
 
     def testModelOnOneTree(self, treeEmbeddings, yValues, activationFunction, aggregationFunction):
         ffnCell = self.FFNCell(treeEmbeddings, activationFunction, 0, aggregationFunction)
@@ -144,14 +145,41 @@ class HiddenTreeLayer:
             allEmbeddings.append(treeEmbeddings)
         return allEmbeddings
 
+    def backPropagate(self, treeEmbeddings, activationFunction, treeCount, aggregationFunction):
+        with tf.GradientTape(persistent=True) as tape:
+            outputs = self.FFNCell(treeEmbeddings)
+            loss = self.lossFunction(outputs, y)
+        for i in range(self.treeCount):
+            self.weightDeltas[i] = tape.gradient(loss, self.weights[i])
+            self.biasDeltas[i] = tape.gradient(loss, self.bias[i])
+            # print(self.weightErrors[i])
+            # print(self.biasErrors[i])
+        del tape
+        self.updateWeights()
+        return loss.numpy()
+
+    def updateWeights(self):
+        for i in range(self.treeCount):
+            self.weights[i].assign_sub(self.learningRate * self.weightDeltas[i])
+            self.bias[i].assign_sub(self.learningRate * self.biasDeltas[i])
+
+    def lossFunction(self, outputs, yValues):
+        return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(yValues, outputs))
+
     def runModel(self, treeEmbeddings, yValues, activationFunction, aggregationFunction):
         predictions = []
+        index = 0
         for tree in treeEmbeddings:
-            ffnCell = self.FFNCell(treeEmbeddings, activationFunction, 0, aggregationFunction)
-            predictions.append(ffnCell)
+            ffnCell = self.FFNCell(tree, activationFunction, index, aggregationFunction)
+            # predictions = self.backPropagate(tree)
+            pred = tf.argmax(tf.nn.softmax(ffnCell))
+            predictions.append(pred)
+            index += 1
+        predictions = tf.convert_to_tensor(predictions)
+
         return predictions
 
-hiddenLayer = HiddenTreeLayer(x_train, y_train, [1, 158, 128, 2], "tanh")
+hiddenLayer = HiddenTreeLayer(x_train, y_train, [1, 158, 128, 2], "tanh", 0.03)
 root = Node(0.9)
 tree, objects = root.preorderTraversal(x_train[0])
 # x = hiddenLayer.testModelOnOneTree(tree, y_train[0], tf.nn.relu, "max")
@@ -159,6 +187,6 @@ tree, objects = root.preorderTraversal(x_train[0])
 
 y = hiddenLayer.prepareEmbeddings()
 z = hiddenLayer.runModel(y, y_train, tf.nn.softmax, "max")
-print(z)
+print(z.numpy())
 tree, objects = root.preorderTraversal(x_train[0])
 

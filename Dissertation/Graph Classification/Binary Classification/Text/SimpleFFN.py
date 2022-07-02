@@ -77,8 +77,8 @@ class FeedForwardNetwork:
 
             metrics['trainingLoss'].append(loss)
 
-            val_preds = self.predict(xTest)
-            metrics['accuracy'].append(np.mean(np.argmax(yTest, axis=1) == val_preds.numpy()))
+            predictions = self.predict(xTest)
+            metrics['accuracy'].append(np.mean(np.argmax(yTest, axis=1) == predictions.numpy()))
             print('Accuracy:', metrics['accuracy'][-1], 'Loss:', metrics['trainingLoss'][-1])
 
         return metrics
