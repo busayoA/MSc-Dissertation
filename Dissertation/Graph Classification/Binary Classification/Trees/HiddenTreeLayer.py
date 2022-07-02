@@ -18,9 +18,11 @@ class HiddenTreeLayer:
         self.activationFunction = activationFunction
         self.weights, self.bias, self.weightDeltas, self.biasDeltas = {}, {}, {}, {}
 
-        # for i in range(self.layerCount):
-        #     self.weights[i] = tf.Variable(tf.random.normal(shape=(self.layers[i], self.layers[i-1])))
-        #     self.bias[i] = tf.Variable(tf.random.normal(shape=(self.layers[i], 1)))
+        for i in range(self.treeCount):
+            tree = self.trees[i]
+            fullTree = tree.preorderTraversal(tree)
+            self.weights[i] = tf.Variable(tf.random.normal(shape=(len(fullTree), 1)))
+            self.bias[i] = tf.Variable(tf.random.normal(shape=(len(fullTree), 1)))
 
     def getDirectChildren(self, root: Node):
         childObjects = root.children
@@ -30,7 +32,7 @@ class HiddenTreeLayer:
 
         return childObjects, childEmbeddings
 
-    def forwardPassOneTree(self):
+    def prepareEmbeddingsOnOneTree(self):
         """ Test the model on one tree """
         self.tester = self.trees[0] 
         self.testerTreeEmbeddings, self.testerTreeObjects = self.trees[0].preorderTraversal(self.trees[0])
@@ -47,28 +49,45 @@ class HiddenTreeLayer:
             else:
                 self.testerTreeEmbeddings[i] = tf.convert_to_tensor(self.testerTreeEmbeddings[i])
 
-        #first layer:
         self.testerTreeEmbeddings = tf.convert_to_tensor(self.testerTreeEmbeddings)
-        self.testerTreeEmbeddings = tf.reshape(self.testerTreeEmbeddings, (len(self.testerTreeEmbeddings), 1))
-        activationFunction = self.getActivationFunction(self.activationFunction)
+        self.testerTreeEmbeddings = tf.reshape(self.testerTreeEmbeddings, (1, len(self.testerTreeEmbeddings)))
 
+        return self.testerTreeEmbeddings
 
+    # def RNNLayer(self, embeddings, yValues, activationFunction):
 
-        self.weights = tf.Variable(tf.random.normal(shape=(len(self.testerTreeEmbeddings), 2)))
-        self.bias = tf.Variable(tf.random.normal(shape=(1, 2)))
-    
-        output = tf.matmul(tf.transpose(self.testerTreeEmbeddings), self.weights) + self.bias
-        output = activationFunction(output)
+    #     embeddings = tf.expand_dims(embeddings, axis=2)
 
-        #second layer:
+    #     extension = tf.constant(np.asarray([i*np.ones(embeddings.shape[1]) for i in range(0, embeddings.shape[0])], dtype=np.float32), dtype=tf.float32)
+    #     extension = tf.expand_dims(extension, axis=2)
 
+    #     embeddings = tf.concat([extension, embeddings], axis=2)
+    #     activationFunction = self.getActivationFunction(self.activationFunction)
+    #     #FIRST HIDDEN LAYER
+    #     rnnCell = tf.keras.layers.SimpleRNNCell(2, activation=activationFunction)
 
+    #     rnn = tf.keras.layers.RNN(rnnCell,return_sequences=True, return_state=True )
 
+    #     # whole_sequence_output has shape `[32, 10, 4]`.
+    #     # final_state has shape `[32, 4]`.
+    #     output, states = rnn(embeddings)
+    #     return output, states
+
+    def aggregationLayer(self, aggregationFunction: str, nodeEmbeddings: List):
+        # nodeEmbeddings = tf.reshape(nodeEmbeddings, (1, len(nodeEmbeddings)))
+        aggregationFunction = self.getAggregationFunction(aggregationFunction)
+        return aggregationFunction(nodeEmbeddings, axis=1)
+
+    def runFFNLayer(self, embeddings, activationFunction, aggregationFunction: str):
+        for tree in self.trees:
+            fullTree = tree.preorderTraversal(tree)
+            output = self.FFNCell(fullTree, activationFunction, aggregationFunction)
         return output
 
-    def RNNLayer(self):
-        pass
-
+    def testModelOnOneTree(self, treeEmbeddings, yValues, activationFunction, aggregationFunction):
+        ffnCell = self.FFNCell(treeEmbeddings, activationFunction, 0, aggregationFunction)
+        return ffnCell
+            
     def getActivationFunction(self, activationFunction: str):
         if activationFunction == 'softmax':
             return tf.nn.softmax
@@ -78,62 +97,68 @@ class HiddenTreeLayer:
             return tf.tanh
         elif activationFunction == 'logsigmoid':
             def logSigmoid(x):
-                weights = tf.Variable(tf.random.normal(shape=(len(x), 2)), dtype=np.float32)
-                bias = tf.Variable(tf.random.normal(shape=(2, 1)), dtype=np.float32)
-                x = tf.matmul(x, weights) + tf.transpose(bias)
                 x = 1.0/(1.0 + tf.math.exp(-x)) 
                 return x
             return logSigmoid
         else:
             return None
 
-    def aggregationLayer(self, aggregationFunction: str, nodeEmbeddings: List):
-        nodeEmbeddings = tf.reshape(nodeEmbeddings, (1, len(nodeEmbeddings)))
-        aggregationFunction = self.getAggregationFunction(aggregationFunction)
-        return aggregationFunction(nodeEmbeddings, axis=1)
-
     def getAggregationFunction(self, aggregationFunction: str):
         aggregationFunction = aggregationFunction.lower()
-        if aggregationFunction == "logsumexp":
-            return tf.reduce_logsumexp
         if aggregationFunction == "max":
             return tf.reduce_max
-        if aggregationFunction == "mean":
-            return tf.reduce_mean
-        if aggregationFunction == "prod":
-            return tf.reduce_prod
-        if aggregationFunction == "std":
-            return tf.math.reduce_std
-        if aggregationFunction == "sum":
-            return tf.reduce_sum
-        if aggregationFunction == "variance":
-            return tf.math.reduce_variance
+        else:
+            return None
 
-    # def traverseTreeBranch(self, root: Node, children):
-    #     return self.getChildren(root, children)
+    def traverseTreeBranch(self, root: Node):
+        return self.getDirectChildren(root)
 
-    # def getChildren(self, root: Node, children):
-    #     children = children
-    #     childNodes = root.children
-    #     if len(childNodes) == 0:
-    #         return childNodes, children
-    #     for child in childNodes:
-    #         if isinstance(child, float):
-    #             children.append(child)
-    #         elif isinstance(child, Node):
-    #             children.append(child.embedding)
-    #             self.getChildren(child, children)
-    #     return childNodes, children
+    def FFNCell(self, fullTree, activationFunction, treeCount, aggregationFunction: str):
+        weights = self.weights[treeCount]
+        bias = self.bias[treeCount]
+        agg = []
+        for t in range(len(fullTree)):
+            currentNode = fullTree[t]
+            outputs = (currentNode * weights) + bias
+            agg.append(self.aggregationLayer(aggregationFunction, outputs))
+        predictions = activationFunction(agg[-1])
 
-    
-hiddenLayer = HiddenTreeLayer(x_train, y_train, [64, 128, 128, 2], "tanh")
-output = hiddenLayer.forwardPassOneTree()
-# testEmbeddings = hiddenLayer.testModelOnOneTree()
-# agg = hiddenLayer.aggregationLayer("sum", testEmbeddings)
+        return predictions
 
-# x = hiddenLayer.forwardPass(testEmbeddings, "tanh")
-# print(hiddenLayer.traverseTreeBranch(x_train[0], []))
+    def prepareEmbeddings(self):
+        allEmbeddings = []
+        for i in range(self.treeCount):
+            treeEmbeddings, treeObjects = self.trees[i].preorderTraversal(self.trees[i])
+            nodeCount = len(treeEmbeddings)
 
+            for j in range(nodeCount):
+                currentNode = treeObjects[j]
+                children = self.getDirectChildren(currentNode)[1]
+                if len(children) > 0:
+                    for k in range(len(children)):
+                        workingTensor = [treeEmbeddings[j], children[k]]
+                        treeEmbeddings[j] = tf.math.reduce_mean(tf.math.log(workingTensor))
+                else:
+                    treeEmbeddings[j] = tf.convert_to_tensor(treeEmbeddings[j])
+            treeEmbeddings = tf.convert_to_tensor(treeEmbeddings)
+            allEmbeddings.append(treeEmbeddings)
+        return allEmbeddings
+
+    def runModel(self, treeEmbeddings, yValues, activationFunction, aggregationFunction):
+        predictions = []
+        for tree in treeEmbeddings:
+            ffnCell = self.FFNCell(treeEmbeddings, activationFunction, 0, aggregationFunction)
+            predictions.append(ffnCell)
+        return predictions
+
+hiddenLayer = HiddenTreeLayer(x_train, y_train, [1, 158, 128, 2], "tanh")
 root = Node(0.9)
+tree, objects = root.preorderTraversal(x_train[0])
+# x = hiddenLayer.testModelOnOneTree(tree, y_train[0], tf.nn.relu, "max")
+# print(x.numpy())
+
+y = hiddenLayer.prepareEmbeddings()
+z = hiddenLayer.runModel(y, y_train, tf.nn.softmax, "max")
+print(z)
 tree, objects = root.preorderTraversal(x_train[0])
 
