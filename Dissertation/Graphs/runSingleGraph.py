@@ -9,8 +9,22 @@ from HiddenGraphLayer import HiddenGraphLayer as HGL
 
 
 input = GIL()
-x_train_nodes, x_train_matrix, y_train = input.readFiles(False)
-x_train = input.prepareData(x_train_nodes, x_train_matrix)
+x, matrices, labels = input.readFiles(False)
+x_train_all, x_train_matrix, y_train, x_test_all, x_test_matrix, y_test = input.splitTrainTest(x, matrices, labels)
+x_train_nodes = []
+x_train_graph = []
+for i in range(len(x_train_all)):
+    x_train_nodes.append(x_train_all[i][0])
+    x_train_graph.append(x_train_all[i][1])
+
+x_test_nodes = []
+x_test_graph = []
+for i in range(len(x_test_all)):
+    x_test_nodes.append(x_test_all[i][0])
+    x_test_graph.append(x_test_all[i][1])
+
+x_train = input.prepareData(x_train_graph, x_train_matrix)
+x_test = input.prepareData(x_test_graph, x_test_matrix)
 
 
 def GBFFNModel(xTrain, yTrain, hiddenActivationFunction):

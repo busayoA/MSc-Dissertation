@@ -1,27 +1,26 @@
 import tensorflow as tf
 import numpy as np
 from typing import List
-from TreeInputLayer import Node 
+from TreeInputLayer import Node, TreeInputLayer
 
 class HiddenTreeLayer:
-    def __init__(self, trees: List[Node], labels, layers, activationFunction: str, learningRate: float, epochs: int):
+    def __init__(self, trees: List[Node], labels, layers, activationFunction: str, learningRate: float, 
+    epochs: int, aggregationFunction: str):
         self.trees = trees
         self.labels = labels
         self.layers = layers
-        self.treeCount = len(trees)
         self.layerCount = len(self.layers)
-        self.hiddenCount = self.layerCount-2
+        self.treeCount = len(self.trees)
         self.activationFunction = self.getActivationFunction(activationFunction)
+        self.aggregationFunction = aggregationFunction
         self.learningRate = learningRate
         self.epochs = epochs
         self.weights, self.bias, self.weightDeltas, self.biasDeltas = {}, {}, {}, {}
 
     def initialiseWeights(self):
-        for i in range(self.treeCount):
-            tree = self.trees[i]
-            fullTree = tree.preorderTraversal(tree)
-            self.weights[i] = tf.Variable(tf.random.normal(shape=(len(fullTree), 1)))
-            self.bias[i] = tf.Variable(tf.random.normal(shape=(len(fullTree), 1)))
+        for i in range(1, self.layerCount):
+            self.weights[i] = tf.Variable(tf.random.normal(shape=(self.layers[i], self.layers[i-1])))
+            self.bias[i] = tf.Variable(tf.random.normal(shape=(self.layers[i], 1)))
 
     def getDirectChildren(self, root: Node):
         childObjects = root.children
@@ -31,49 +30,6 @@ class HiddenTreeLayer:
 
         return childObjects, childEmbeddings
 
-    def prepareEmbeddingsOnOneTree(self):
-        """ Test the model on one tree """
-        self.tester = self.trees[0] 
-        self.testerTreeEmbeddings, self.testerTreeObjects = self.trees[0].preorderTraversal(self.trees[0])
-        nodeCount = len(self.testerTreeEmbeddings)
-
-        for i in range(nodeCount):
-            currentNode = self.testerTreeObjects[i]
-            children = self.getDirectChildren(currentNode)[1]
-            if len(children) > 0:
-                for j in range(len(children)):
-                    workingTensor = [self.testerTreeEmbeddings[i], children[j]]
-                    x = tf.math.reduce_mean(tf.math.log(workingTensor))
-                    self.testerTreeEmbeddings[i] = x
-            else:
-                self.testerTreeEmbeddings[i] = tf.convert_to_tensor(self.testerTreeEmbeddings[i])
-
-        self.testerTreeEmbeddings = tf.convert_to_tensor(self.testerTreeEmbeddings)
-        self.testerTreeEmbeddings = tf.reshape(self.testerTreeEmbeddings, (1, len(self.testerTreeEmbeddings)))
-
-        return self.testerTreeEmbeddings
-
-    # def RNNLayer(self, embeddings, yValues, activationFunction):
-    #     embeddings = tf.expand_dims(embeddings, axis=2)
-    #     extension = tf.constant(np.asarray([i*np.ones(embeddings.shape[1]) for i in range(0, embeddings.shape[0])], dtype=np.float32), dtype=tf.float32)
-    #     extension = tf.expand_dims(extension, axis=2)
-    #     embeddings = tf.concat([extension, embeddings], axis=2)
-    #     activationFunction = self.getActivationFunction(self.activationFunction)
-    #     #FIRST HIDDEN LAYER
-    #     rnnCell = tf.keras.layers.SimpleRNNCell(2, activation=activationFunction)
-    #     rnn = tf.keras.layers.RNN(rnnCell,return_sequences=True, return_state=True)
-    #     output, states = rnn(embeddings)
-    #     return output, states
-
-    def aggregationLayer(self, aggregationFunction: str, nodeEmbeddings: List, axis: int):
-        # nodeEmbeddings = tf.reshape(nodeEmbeddings, (1, len(nodeEmbeddings)))
-        aggregationFunction = self.getAggregationFunction(aggregationFunction)
-        return aggregationFunction(nodeEmbeddings, axis=axis)
-
-    def testModelOnOneTree(self, treeEmbeddings, aggregationFunction):
-        ffnCell = self.FFNCell(treeEmbeddings, 0, aggregationFunction)
-        return ffnCell
-            
     def getActivationFunction(self, activationFunction: str):
         if activationFunction == 'softmax':
             return tf.nn.softmax
@@ -96,97 +52,152 @@ class HiddenTreeLayer:
         else:
             return None
 
-    def traverseTreeBranch(self, root: Node):
-        return self.getDirectChildren(root)
+    def prepareEmbeddingsOnOneTree(self):
+        """ Test the model on one tree """
+        self.tester = self.trees[0] 
+        self.testerTreeEmbeddings = self.treeNodes[0]
+        self.testerTreeObjects = self.tester.preorderTraversal(self.tester)[1]
+        nodeCount = len(self.testerTreeObjects)
+        
+        for i in range(nodeCount):
+            currentNode = self.testerTreeObjects[i]
+            children = self.getDirectChildren(currentNode)[1]
+            if len(children) > 0:
+                for j in range(len(children)):
+                    workingTensor = [self.testerTreeEmbeddings[i], children[j]]
+                    agg = self.aggregationLayer(self.aggregationFunction, workingTensor)
+                    x = tf.math.reduce_mean(tf.math.log(agg))
+                    self.testerTreeEmbeddings[i] = x
+            else:
+                self.testerTreeEmbeddings[i] = tf.convert_to_tensor(self.testerTreeEmbeddings[i])
 
-    def prepareEmbeddings(self):
-        allEmbeddings = []
-        for i in range(self.treeCount):
-            treeEmbeddings, treeObjects = self.trees[i].preorderTraversal(self.trees[i])
-            nodeCount = len(treeEmbeddings)
-            for j in range(nodeCount):
+        self.testerTreeEmbeddings = tf.convert_to_tensor(self.testerTreeEmbeddings)
+        self.testerTreeEmbeddings = tf.reshape(self.testerTreeEmbeddings, (1, len(self.testerTreeEmbeddings)))
+
+        return self.testerTreeEmbeddings
+
+    def testModelOnOneTree(self, treeEmbeddings, aggregationFunction):
+        self.initialiseWeights()
+        ffnCell = self.FFNCell(treeEmbeddings, aggregationFunction)
+        return ffnCell
+
+    def FFNCell(self, tree):
+        outputs = tf.convert_to_tensor(tree, dtype=tf.float32)
+        dimensions = tf.shape(outputs)
+        outputs = tf.reshape(outputs, (1, dimensions[0]))
+        for i in range(1, self.layerCount): 
+            weights = self.weights[i]
+            bias = self.bias[i]
+            outputs = tf.matmul(outputs, tf.transpose(weights)) + tf.transpose(bias)
+            predictions = self.activationFunction(outputs)
+        return predictions
+
+    def backPropagate(self, tree, yValues):
+        with tf.GradientTape(persistent=True) as tape: 
+            output = self.FFNCell(tree)
+            loss = self.lossFunction(output, yValues)
+        
+        for i in range(1, self.layerCount):
+            self.weightDeltas[i] = tape.gradient(loss, self.weights[i])
+            self.biasDeltas[i] = tape.gradient(loss, self.bias[i])
+        del tape
+        self.updateWeights()
+        return loss.numpy()
+
+    def aggregationLayer(self, aggregationFunction: str, nodeEmbeddings: List):
+        # nodeEmbeddings = tf.reshape(nodeEmbeddings, (1, len(nodeEmbeddings)))
+        aggregationFunction = self.getAggregationFunction(aggregationFunction)
+        return aggregationFunction(nodeEmbeddings)
+
+    def updateWeights(self):
+        for i in range(1, self.layerCount):
+            self.weights[i].assign_sub(self.learningRate * self.weightDeltas[i])
+            self.bias[i].assign_sub(self.learningRate * self.biasDeltas[i])
+
+    def lossFunction(self, outputs, yValues):
+        return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(yValues, outputs))
+
+    def prepareAllEmbeddings(self, treeNodes):
+        allEmbeddings = treeNodes
+        embeddings = []
+        for i in range(len(allEmbeddings)):
+            treeObjects = self.trees[i].preorderTraversal(self.trees[i])[1]
+            treeEmbeddings = allEmbeddings[i]
+            for j in range(len(treeObjects)):
                 currentNode = treeObjects[j]
                 children = self.getDirectChildren(currentNode)[1]
                 if len(children) > 0:
                     for k in range(len(children)):
                         workingTensor = [treeEmbeddings[j], children[k]]
-                        treeEmbeddings[j] = tf.math.reduce_mean(tf.math.log(workingTensor))
+                        agg = self.aggregationLayer(self.aggregationFunction, workingTensor)
+                        treeEmbeddings[j] = tf.math.reduce_mean(tf.math.log(agg))
                 else:
                     treeEmbeddings[j] = tf.convert_to_tensor(treeEmbeddings[j])
             treeEmbeddings = tf.convert_to_tensor(treeEmbeddings)
-            allEmbeddings.append(treeEmbeddings)
-        return allEmbeddings
+            embeddings.append(treeEmbeddings)
+        return embeddings
 
-    def FFNCell(self, fullTree, treeCount, aggregationFunction: str):
-        weights = self.weights[treeCount]
-        bias = self.bias[treeCount]
-        agg = []
-        for t in range(len(fullTree)):
-            currentNode = fullTree[t]
-            outputs = (currentNode * weights) + bias
-            agg.append(self.aggregationLayer(aggregationFunction, outputs, 1))
-        predictions = self.activationFunction(agg[-1])
+    def makePrediction(self, x_test):
+        prediction = []
+        predictions = []
+        for tree in x_test:
+            output = self.FFNCell(tree)
+            prediction = tf.argmax(tf.nn.softmax(output), axis=1)
+            predictions.append(prediction)
+        return tf.convert_to_tensor(predictions)
 
-        return predictions
-
-    def backPropagate(self, tree, treeCount, aggregationFunction, yValues):
-        with tf.GradientTape(persistent=True) as tape:
-            outputs = self.FFNCell(tree, treeCount, aggregationFunction)
-            loss = self.lossFunction(outputs, yValues)
-        self.weightDeltas[treeCount] = tape.gradient(loss, self.weights[treeCount])
-        self.biasDeltas[treeCount] = tape.gradient(loss, self.bias[treeCount])
-            # print(self.weightErrors[i])
-            # print(self.biasErrors[i])
-        del tape
-        self.updateWeights(treeCount)
-
-    def updateWeights(self, treeCount):
-        self.weights[treeCount].assign_sub(self.learningRate * self.weightDeltas[treeCount])
-        self.bias[treeCount].assign_sub(self.learningRate * self.biasDeltas[treeCount])
-
-    def lossFunction(self, outputs, yValues):
-        return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(yValues, outputs))
-
-    def runModel(self, xTrain, yTrain, aggregationFunction):
+    def runModel(self, x_train, y_train, x_test, y_test):
         print("Without Back Propagation")
         index = 0
-        metrics = {'trainingAccuracy': []}
+        metrics = {'trainingAccuracy': [], 'validationAccuracy': []}
         self.initialiseWeights()
         for i in range(self.epochs):
             predictions = []
-            if index >= len(xTrain):
-                index = 0
-            print('Epoch {}'.format(i), end='........')
-            for tree in xTrain:
-                outputs = self.FFNCell(tree, index, aggregationFunction)
-                pred = tf.argmax(tf.nn.softmax(outputs))
+            print('Epoch {}'.format(i), end='.')
+            for tree in x_train:
+                if index % 5 == 0:
+                    print(end=".")
+                if index >= len(y_train):
+                    index = 0
+                outputs = self.FFNCell(tree)
+                pred = tf.argmax(tf.nn.softmax(outputs), axis = 1)
                 predictions.append(pred)
                 index += 1
             predictions = tf.convert_to_tensor(predictions)
-            metrics['trainingAccuracy'].append(np.mean(np.argmax(yTrain, axis=1) == predictions.numpy()))
-            print('Accuracy:', metrics['trainingAccuracy'][-1])
-        return metrics
+            # print(predictions)
+            unseenPredictions = self.makePrediction(x_test)
+            metrics['trainingAccuracy'].append(np.mean(np.argmax(y_train, axis=1) == predictions.numpy()))
+            metrics['validationAccuracy'].append(np.mean(np.argmax(y_test, axis=1) == unseenPredictions.numpy()))
+            print('\tTraining Accuracy:', metrics['trainingAccuracy'][-1],'Validation Accuracy:', metrics['validationAccuracy'][-1])
 
-    def runModelWithBackPropagation(self, xTrain, yTrain, aggregationFunction):
+    def runModelWithBackPropagation(self, x_train, y_train, x_test, y_test):
         print("Applying Back Propagation")
         index = 0
-        metrics = {'trainingLoss': [], 'trainingAccuracy': []}
+        metrics = {'trainingLoss': [], 'trainingAccuracy': [], 'validationAccuracy': []}
         self.initialiseWeights()
+        loss = []
         for i in range(self.epochs):
             predictions = []
-            if index >= len(xTrain):
-                index = 0
-            print('Epoch {}'.format(i), end='........')
-            for tree in xTrain:
-                # FIRST FORRWARD PASS
-                self.backPropagate(tree, index, aggregationFunction, yTrain[index])
-                newOutputs = self.FFNCell(tree, index, aggregationFunction)
-                pred = tf.argmax(tf.nn.softmax(newOutputs))
+            print('Epoch {}'.format(i), end='.')
+            for tree in x_train:
+                if index % 5 == 0:
+                    print(end=".")
+                if index >= len(y_train):
+                    index = 0
+
+                # FIRST FORWARD PASS
+                loss.append(self.backPropagate(tree, y_train[index]))
+                # SECOND FORWARD PASS/RECURRENT LOOP
+                newOutputs = self.FFNCell(tree)
+                pred = tf.argmax(tf.nn.softmax(newOutputs), axis = 1)
                 predictions.append(pred)
                 index += 1
             predictions = tf.convert_to_tensor(predictions)
-            metrics['trainingAccuracy'].append(np.mean(np.argmax(yTrain, axis=1) == predictions.numpy()))
-            print('Accuracy:', metrics['trainingAccuracy'][-1])
+            # print(predictions)
+            unseenPredictions = self.makePrediction(x_test)
+            metrics['trainingLoss'].append(tf.reduce_mean(loss).numpy())
+            metrics['trainingAccuracy'].append(np.mean(np.argmax(y_train, axis=1) == predictions.numpy()))
+            metrics['validationAccuracy'].append(np.mean(np.argmax(y_test, axis=1) == unseenPredictions.numpy()))
+            print('\tLoss:', metrics['trainingLoss'][-1], 'Training Accuracy:', metrics['trainingAccuracy'][-1],
+            'Validation Accuracy:', metrics['validationAccuracy'][-1])
         return metrics
-
-

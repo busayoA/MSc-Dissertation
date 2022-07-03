@@ -1,4 +1,4 @@
-import os, ast, re
+import os, ast, re, random
 import numpy as np
 import tensorflow as tf
 import networkx as nx
@@ -38,42 +38,22 @@ class GraphInputLayer():
 
         if file3 is not None:
             graph3, labels3 = self.assignLabels(file3)
-            x_train = graph1 + graph2 + graph3
-            y_train = labels1 + labels2 + labels3
+            x = graph1 + graph2 + graph3
+            y = labels1 + labels2 + labels3
         else:
-            x_train = graph1 + graph2 
-            y_train = labels1 + labels2
+            x = graph1 + graph2 
+            y = labels1 + labels2
         
         
-        return x_train, y_train
+        return x, y
 
-    def convertToMatrix(self, x_list):
+    def convertToMatrix(self, x):
         matrices = []
-        for graph in x_list:
+        for graph in x:
             matrix = nx.to_numpy_array(graph)
             # matrix = tf.convert_to_tensor(matrix, dtype=np.float32)
             matrices.append(matrix)
         return matrices
-
-    def getDatasets(self, x_train, y_train):
-        x_train_matrix = self.convertToMatrix(x_train)
-        y_train = tf.keras.utils.to_categorical(y_train)  
-
-        return x_train, x_train_matrix, y_train, 
-
-    def getAdjacencyLists(self, x_train, x_matrix):
-        embeddings = list(x_train.nodes)
-        adjList = nx.dfs_successors(x_train)
-        adjacencies = []
-        print(end=".")
-        for i in range(len(embeddings)):
-            node = embeddings[i]
-            embeddings[i] = sum(embeddings[i] * x_matrix[i])
-
-            for item in adjList:
-                if item == node:
-                    adjacencies.append([embeddings[i], node, adjList[item]])
-        return embeddings, adjacencies
 
     def readFiles(self, multi: bool):
         current_dir = dirname(__file__)
@@ -87,48 +67,82 @@ class GraphInputLayer():
         if multi is True:
             other = "./Data/Other"
             other = join(current_dir, other)
-            xTrain, yTrain = self.assignLabelsToFiles(merge, quick, other)
+            x_graph, y = self.assignLabelsToFiles(merge, quick, other)
         else:
-            xTrain, yTrain = self.assignLabelsToFiles(merge, quick)
+            x_graph, y  = self.assignLabelsToFiles(merge, quick)
 
-        x_train_nodes, x_train_matrix, y_train = self.getDatasets(xTrain, yTrain)
-
-        return x_train_nodes, x_train_matrix, y_train
-
-    # def getGraphs(self, multi: bool):
-    #     current_dir = dirname(__file__)
-
-    #     merge = "./Data/Merge Sort"
-    #     quick = "./Data/Quick Sort"
-
-    #     merge = join(current_dir, merge)
-    #     quick = join(current_dir, quick)
-
-    #     if multi is True:
-    #         other = "./Data/Other"
-    #         other = join(current_dir, other)
-    #         xTrain, yTrain = self.assignLabelsToFiles(merge, quick, other)
-    #     else:
-    #         xTrain, yTrain = self.assignLabelsToFiles(merge, quick)
-
-    #     return xTrain, yTrain
-
-    def prepareData(self, x_list, x_matrix):
-        exitGraph = []
-        x_nodes = x_list
-        print("Collecting node embeddings and adjacency lists")
-        adj = [0] * len(x_list)
+        matrices = self.convertToMatrix(x_graph)
+        x_list, matrices = self.padGraphs(x_graph, matrices)
+        x = []
         for i in range(len(x_list)):
-            x_list[i], adj[i] = self.getAdjacencyLists(x_list[i], x_matrix[i])
+            x.append([x_list[i], x_graph[i]])
+
+        for i in range(len(x)):
+            x[0][0].append(y[i])
+        
+        random.shuffle(x)
+        labels = []
+        for i in range(len(x)):
+            labels.append(x[i][0][-1])
+            x[i][0].pop()
+
+        return x, matrices, labels
+
+    def padGraphs(self, graphs, matrices):
+        x = []
+        maxLen = 0
+        for i in graphs:
+            if maxLen < len(i):
+                maxLen = len(i)
+
+        for i in range(len(graphs)):
+            currentGraph = list(graphs[i].nodes)
+            currentMatrix = matrices[i]
+
+            if len(currentGraph) < maxLen:
+                shape = np.shape(currentMatrix)
+                padCount = maxLen - len(currentGraph)
+
+                paddedMatrix = np.zeros((maxLen, maxLen))
+                paddedMatrix[:shape[0], :shape[1]] = currentMatrix
+
+                for j in range(padCount):
+                    currentGraph.append(0.0)
+            x.append(currentGraph)
+            matrices[i] = paddedMatrix
+
+        return x, matrices
+
+    def getAdjacencyLists(self, x, matrices):
+        embeddings = list(x.nodes)
+        adjList = nx.dfs_successors(x)
+        adjacencies = []
+        print(end=".")
+        for i in range(len(embeddings)):
+            node = embeddings[i]
+            embeddings[i] = sum(embeddings[i] * matrices[i])
+
+            for item in adjList:
+                if item == node:
+                    adjacencies.append([embeddings[i], node, adjList[item]])
+        return embeddings, adjacencies
+
+    def prepareData(self, x, matrices):
+        exitGraph = []
+        nodes = x
+        print("Collecting node embeddings and adjacency lists")
+        adj = [0] * len(x)
+        for i in range(len(x)):
+            x[i], adj[i] = self.getAdjacencyLists(x[i], matrices[i])
 
         # for i in range(len(x_list)):
         #     x_list[i] = tf.convert_to_tensor(x_list[i], dtype=np.float32)
 
         index = 0
-        for graph in x_list:  
+        for graph in x:  
             finalWorkingGraph = []
             adjacencies = adj[index]
-            originalNodes = x_nodes[index]
+            originalNodes = nodes[index]
             nodesWithAdjacentNodes = [adjacencies[i][1] for i in range(len(adjacencies))]
             adjacentNodes = [adjacencies[i][2] for i in range(len(adjacencies))]
 
@@ -150,6 +164,22 @@ class GraphInputLayer():
             index += 1
 
         return exitGraph
+
+    def splitTrainTest(self, x, matrices, y):
+        split = int(0.7 * len(x))
+
+        x_train = x[:split]
+        x_train_matrix = matrices[:split]
+        y_train = y[:split]
+
+        x_test = x[split:]
+        x_test_matrix = matrices[split:]
+        y_test = y[split:]
+
+        y_train = tf.keras.utils.to_categorical(y_train)
+        y_test = tf.keras.utils.to_categorical(y_test)  
+        
+        return x_train, x_train_matrix, y_train, x_test, x_test_matrix, y_test
 
 
 class Visitor(ast.NodeVisitor):

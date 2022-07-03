@@ -1,6 +1,25 @@
-import os, ast
+import os, ast, random
+from typing import List
 import tensorflow as tf
 from os.path import dirname, join
+
+class Node():
+    def __init__(self, embedding: float):
+        self.embedding = embedding
+        self.children = []
+
+    def preorderTraversal(self, root):
+        embeddingTree = []
+        objectTree = []
+
+        if root is not None:
+            embeddingTree.append(root.embedding)
+            objectTree.append(root)
+            for i in range(len(root.children)):
+                embeddingTree = embeddingTree + (self.preorderTraversal(root.children[i]))[0]
+                objectTree = objectTree + (self.preorderTraversal(root.children[i]))[1]
+
+        return list(set(embeddingTree)), list(set(objectTree))
 
 def createTreeFromEdges(edges):
     nodeEdges = set(i for edge in edges for i in edge)
@@ -14,61 +33,6 @@ def createTreeFromEdges(edges):
     
     for edge in nodeEdges:
         return nodes[edge]
-
-class TreeInputLayer():
-    def convertToTree(self, filePath):
-        programAST = ''
-        with open (filePath, "r") as file:
-            programAST = ast.parse(file.read())
-        visitor = Visitor()
-        visitor.generic_visit(programAST)
-        tree = createTreeFromEdges(visitor.edges)
-
-        return tree
-
-    def assignLabels(self, filePath):
-        current_dir = dirname(__file__)
-        filePath = join(current_dir, filePath)
-        trees, labels = [], []
-        os.chdir(filePath)
-        for file in os.listdir():
-            # Check whether file is in text format or not
-            if file.endswith(".py"):
-                path = f"{filePath}/{file}"
-                # call read text file function
-                treeData = self.convertToTree(path)
-                trees.append(treeData)
-                if filePath.find("Merge") != -1:
-                    labels.append(0)
-                elif filePath.find("Quick") != -1:
-                    labels.append(1)
-                elif filePath.find("Other") != -1:
-                    labels.append(2)
-        return trees, labels
-
-    def getData(self, multi: bool):
-        current_dir = dirname(__file__)
-
-        merge = "./Data/Merge Sort"
-        quick = "./Data/Quick Sort"
-        other = "./Data/Other"
-
-        merge = join(current_dir, merge)
-        quick = join(current_dir, quick)
-
-        mergeTree, mergeLabels = self.assignLabels(merge)
-        quickTree, quickLabels = self.assignLabels(quick)
-        if multi is True:
-            otherTree, otherLabels = self.assignLabels(other)
-
-            x_train = mergeTree + quickTree + otherTree
-            y_train = mergeLabels + quickLabels + otherLabels
-        else:
-            x_train = mergeTree + quickTree 
-            y_train = mergeLabels + quickLabels 
-        y_train = tf.keras.utils.to_categorical(y_train)  
-
-        return x_train, y_train
 
 
 class Visitor(ast.NodeVisitor):
@@ -159,21 +123,108 @@ class Visitor(ast.NodeVisitor):
     def visitConstant(self, node: ast.Constant):
         return "value = " + str(node.value)
 
+class TreeInputLayer():
+    def convertToTree(self, filePath):
+        programAST = ''
+        with open (filePath, "r") as file:
+            programAST = ast.parse(file.read())
+        visitor = Visitor()
+        visitor.generic_visit(programAST)
+        tree = createTreeFromEdges(visitor.edges)
 
-class Node():
-    def __init__(self, embedding: float):
-        self.embedding = embedding
-        self.children = []
+        return tree
 
-    def preorderTraversal(self, root):
-        embeddingTree = []
-        objectTree = []
+    def assignLabels(self, filePath):
+        current_dir = dirname(__file__)
+        filePath = join(current_dir, filePath)
+        trees, labels = [], []
+        os.chdir(filePath)
+        for file in os.listdir():
+            # Check whether file is in text format or not
+            if file.endswith(".py"):
+                path = f"{filePath}/{file}"
+                # call read text file function
+                treeData = self.convertToTree(path)
+                trees.append(treeData)
+                if filePath.find("Merge") != -1:
+                    labels.append(0)
+                elif filePath.find("Quick") != -1:
+                    labels.append(1)
+                elif filePath.find("Other") != -1:
+                    labels.append(2)
+        return trees, labels
 
-        if root is not None:
-            embeddingTree.append(root.embedding)
-            objectTree.append(root)
-            for i in range(len(root.children)):
-                embeddingTree = embeddingTree + (self.preorderTraversal(root.children[i]))[0]
-                objectTree = objectTree + (self.preorderTraversal(root.children[i]))[1]
+    def getData(self, multi: bool):
+        current_dir = dirname(__file__)
 
-        return list(set(embeddingTree)), list(set(objectTree))
+        merge = "./Data/Merge Sort"
+        quick = "./Data/Quick Sort"
+        other = "./Data/Other"
+
+        merge = join(current_dir, merge)
+        quick = join(current_dir, quick)
+
+        mergeTree, mergeLabels = self.assignLabels(merge)
+        quickTree, quickLabels = self.assignLabels(quick)
+        if multi is True:
+            otherTree, otherLabels = self.assignLabels(other)
+
+            x = mergeTree + quickTree + otherTree
+            y = mergeLabels + quickLabels + otherLabels
+        else:
+            x = mergeTree + quickTree 
+            y = mergeLabels + quickLabels 
+
+        return x, y
+
+    def padTrees(self, multi: bool):
+        maxLen = 0
+        x, y = self.getData(multi)
+        embeddings = []
+        for tree in x:
+            nodeEmbeddings = tree.preorderTraversal(tree)[0]
+            if maxLen < len(nodeEmbeddings):
+                maxLen = len(nodeEmbeddings)
+        
+        for tree in x:
+            nodeEmbeddings = tree.preorderTraversal(tree)[0]
+            if len(nodeEmbeddings) < maxLen:
+                for j in range(maxLen - len(nodeEmbeddings)):
+                    nodeEmbeddings.append(0.0)
+
+            embeddings.append(nodeEmbeddings)
+
+        x_all = []
+        for i in range(len(x)):
+            embeddings[i].append(y[i])
+            x_all.append([embeddings[i], x[i]])
+
+        random.shuffle(x_all)
+        labels = []
+        for i in range(len(x_all)):
+            labels.append(x_all[i][0][-1])
+            x_all[i][0].pop()
+
+        return x_all, labels
+    
+    def splitTrainTest(self, multi: bool):
+        x_all, y = self.padTrees(multi)
+
+        split = int(0.7 * len(y))
+
+        x_train = x_all[:split]
+        y_train = y[:split]
+
+        x_test = x_all[split:]
+        y_test = y[split:]
+
+        y_train = tf.keras.utils.to_categorical(y_train)
+        y_test = tf.keras.utils.to_categorical(y_test)  
+        
+        return x_train, y_train, x_test, y_test
+
+
+# tester = TreeInputLayer()
+# # x, y = tester.padTrees(False)
+# x_train, y_train, x_test, y_test = tester.splitTrainTest(False)
+# print()

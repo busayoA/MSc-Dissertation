@@ -41,6 +41,7 @@ def getBinaryCodeData():
 
     x_train = mergeList[:int(0.7*len(mergeList))] + quickList[:int(0.7*len(quickList))] 
     x_test = mergeList[int(0.7*len(mergeList)):] + quickList[int(0.7*len(quickList)):]
+
     y_train = mergeLabels[:int(0.7*len(mergeList))] + quickLabels[:int(0.7*len(quickList))]
     y_test = mergeLabels[int(0.7*len(mergeList)):] + quickLabels[int(0.7*len(quickList)):] 
 
@@ -61,7 +62,7 @@ def getMultiCodeData():
     x_train = mergeList[:int(0.7*len(mergeList))] + quickList[:int(0.7*len(quickList))] + otherList[:int(0.7*len(otherList))] 
     x_test = mergeList[int(0.7*len(mergeList)):] + quickList[int(0.7*len(quickList)):] + otherList[int(0.7*len(otherList)):] 
 
-    y_train = mergeLabels[:int(0.7*len(mergeList))] + quickLabels[:int(0.7*len(quickList))] + quickLabels[:int(0.7*len(quickList))]
+    y_train = mergeLabels[:int(0.7*len(mergeList))] + quickLabels[:int(0.7*len(quickList))] + otherLabels[:int(0.7*len(otherLabels))]
     y_test = mergeLabels[int(0.7*len(mergeList)):] + quickLabels[int(0.7*len(quickList)):] + otherLabels[int(0.7*len(otherLabels)):] 
 
     return x_train, y_train, x_test, y_test
@@ -83,5 +84,3 @@ def getVectorizedCodeData(binary: bool):
     y_test = tf.keras.utils.to_categorical(y_test)
 
     return x_train, y_train, x_test, y_test
-
-getVectorizedCodeData()
