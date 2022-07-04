@@ -3,22 +3,27 @@ import tensorflow as tf
 import parseFiles as pf
 from Node import Node
 from typing import List
+from os.path import dirname, join
 
-class TreeEmbeddingLayer1():
-    def __init__(self, values: list[List, List]):
+class TreeEmbeddingLayer():
+    def __init__(self, values: list[List, List], padding: bool):
+        self.padding = padding
         self.nodes = values[0]
         self.root = self.getRootNode()
+        self.fullTree = self.root.preOrderTraversal(self.root)
         self.label = values[1]
         self.rootVec = random.random()
         self.weights = {}
         self.bias = {}
-        self.fullTree = self.root.preOrderTraversal(self.root)
         self.vectorEmbeddings = [[self.root, self.rootVec]]
+        self.vectors = [self.rootVec]
         self.treeDepth = self.getTreeDepth(self.root)
        
         self.initialiseInputWeights()
         self.embeddingFunction(self.root)
-        self.embedPaddedNodes()
+
+        if self.padding is True:
+            self.embedPaddedNodes()
 
     def getTreeDepth(self, root):
         if root is None:
@@ -47,7 +52,9 @@ class TreeEmbeddingLayer1():
                 childIndex =  self.nodes.index(child)
                 vec = self.vecFunction(rootChildCount, parentIndex, child, childIndex)
                 self.vectorEmbeddings.append([child, vec])
+                self.vectors.append(vec)
                 self.embeddingFunction(child)
+        
 
     def embedPaddedNodes(self):
         if len(self.vectorEmbeddings) < 311:
@@ -83,23 +90,46 @@ class TreeEmbeddingLayer1():
         index = 0
         parent = None
         found = False
-        while found is False and index < 311:
-            found = True
-            currentNode = self.nodes[index]
-            currentNodeChildren = currentNode.children
-            if child in currentNodeChildren:
+        if self.padding is True:
+            while found is False and index < 311:
                 found = True
-                parent = currentNode
-            else:
-                found = False
-            index += 1
+                currentNode = self.nodes[index]
+                currentNodeChildren = currentNode.children
+                if child in currentNodeChildren:
+                    found = True
+                    parent = currentNode
+                else:
+                    found = False
+                index += 1
+        else:
+            while found is False and index < len(self.nodes):
+                found = True
+                currentNode = self.nodes[index]
+                currentNodeChildren = currentNode.children
+                if child in currentNodeChildren:
+                    found = True
+                    parent = currentNode
+                else:
+                    found = False
+                index += 1
         return parent
 
 
-def getData(padding: bool):
+def saveData(padding: bool):
+    current_dir = dirname(__file__)
     x, y = pf.x, pf.y
     if padding is True:
-        x = pf.padTrees(x)
+        x = pf.getPaddedTrees(x)
+        xTrain = join(current_dir, "./Data/x_train_padded.txt")
+        yTrain = join(current_dir, "./Data/y_train_padded.txt")
+        xTest = join(current_dir, "./Data/x_test_padded.txt")
+        yTest = join(current_dir, "./Data/y_test_padded.txt")
+    else:
+        x = pf.getUnpaddedTrees(x)
+        xTrain = join(current_dir, "./Data/x_train.txt")
+        yTrain = join(current_dir, "./Data/y_train.txt")
+        xTest = join(current_dir, "./Data/x_test.txt")
+        yTest = join(current_dir, "./Data/y_test.txt")
     pairs = pf.attachLabels(x, y)
     split = int(0.8 * len(pairs))
     train, test = pairs[:split], pairs[split:]
@@ -109,20 +139,83 @@ def getData(padding: bool):
     for i in range(len(train)):
         if i % 5 == 0:
             print(end=".")
-        embedding = TreeEmbeddingLayer1(train[i])
-        x_train.append(embedding.vectorEmbeddings)
+        embedding = TreeEmbeddingLayer(train[i], padding)
+        x_train.append(embedding.vectors)
         y_train.append(embedding.label)
 
-    print("\nCollecting testing data", end="......")
+    with open(xTrain, 'w') as writer:
+        for i in x_train:
+            writer.write(str(i) + "\n")
+
+    with open(yTrain, 'w') as writer:
+        for i in y_train:
+            writer.write(str(i) + "\n")
+    print()
+    
+    
+    print("Collecting testing data", end="......")
     x_test, y_test = [], []
     for i in range(len(test)):
         if i % 5 == 0:
             print(end=".")
-        embedding = TreeEmbeddingLayer1(test[i])
-        x_test.append(embedding.vectorEmbeddings)
+        embedding = TreeEmbeddingLayer(test[i], padding)
+        x_test.append(embedding.vectors)
         y_test.append(embedding.label)
+    with open(xTest, 'w') as writer:
+        for i in x_test:
+            writer.write(str(i) + "\n")
+        
+    with open(yTest, 'w') as writer:
+        for i in y_test:
+            writer.write(str(i) + "\n")
     print()
+    
+# saveData(False)
+# saveData(True)
+
+def readXFiles(filePath):
+    with open(filePath, 'r') as reader:
+        values = reader.readlines()
+    
+    for x in range(len(values)):
+        values[x] = values[x].replace("[", "").replace("]", "").strip("\n")
+        values[x] = values[x].split(",")
+        values[x] = [float(i) for i in values[x]]
+
+    return values
+
+def readYFiles(filePath):
+    with open(filePath, 'r') as reader:
+        values = reader.readlines()
+    
+    for y in range(len(values)):
+        values[y] = values[y].replace("[", "").replace("]", "").strip("\n")
+        values[y] = values[y].split(" ")
+        values[y] = [float(i) for i in values[y]]
+
+    return values
+
+def getData(padding):
+    current_dir = dirname(__file__)
+    if padding is True:
+        xTrain = join(current_dir, "./Data/x_train_padded.txt")
+        yTrain = join(current_dir, "./Data/y_train_padded.txt")
+        xTest = join(current_dir, "./Data/x_test_padded.txt")
+        yTest = join(current_dir, "./Data/y_test_padded.txt")
+    else:
+        xTrain = join(current_dir, "./Data/x_train.txt")
+        yTrain = join(current_dir, "./Data/y_train.txt")
+        xTest = join(current_dir, "./Data/x_test.txt")
+        yTest = join(current_dir, "./Data/y_test.txt")
+
+    x_train, y_train, x_test, y_test = [], [], [], []
+    x_train = readXFiles(xTrain)
+    y_train = readYFiles(yTrain)
+
+    x_test = readXFiles(xTest)
+    y_test = readYFiles(yTest)
 
     return x_train, y_train, x_test, y_test
 
+getData(False)
         

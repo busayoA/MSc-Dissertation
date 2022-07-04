@@ -52,7 +52,7 @@ def attachLabels(x, y):
     random.shuffle(pairs)
     return pairs
 
-def padTrees(trees):
+def getPaddedTrees(trees):
     maxLen = 0
     embeddings = []
     for tree in trees:
@@ -66,6 +66,15 @@ def padTrees(trees):
             for j in range(maxLen - len(nodeEmbeddings)):
                 nodeEmbeddings.append(Node())
 
+        embeddings.append(nodeEmbeddings)
+
+    return embeddings
+
+def getUnpaddedTrees(trees):
+    embeddings = []
+
+    for tree in trees:
+        nodeEmbeddings = tree.preOrderTraversal(tree)
         embeddings.append(nodeEmbeddings)
 
     return embeddings
