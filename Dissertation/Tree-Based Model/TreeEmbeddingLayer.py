@@ -6,8 +6,7 @@ from typing import List
 from os.path import dirname, join
 
 class TreeEmbeddingLayer():
-    def __init__(self, values: list[List, List], padding: bool):
-        self.padding = padding
+    def __init__(self, values: list[List, List]):
         self.root = values[0]
         self.nodes =  self.root.preOrderTraversal(self.root)
         self.label = values[1]

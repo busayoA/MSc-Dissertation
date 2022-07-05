@@ -10,7 +10,6 @@ input = GIL()
 x_train_nodes, x_train_matrix, y_train, x_test_nodes, x_test_matrix, y_test = input.readFiles()
 x_train = input.prepareData(x_train_nodes, x_train_matrix)
 
-
 def GBFFNModel(x_train, y_train, hiddenActivationFunction):
     index = 0
     accuracy = []
