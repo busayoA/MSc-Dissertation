@@ -76,24 +76,3 @@ class PaddedTreeRNN(TreeRNN):
             print('\tLoss:', metrics['trainingLoss'][-1], 'Training Accuracy:', metrics['trainingAccuracy'][-1],
             'Validation Accuracy:', metrics['validationAccuracy'][-1])
         return metrics
-
-# xTrain, y_train, xTest, y_test = embeddingLayer.getData(True)
-
-# x_train, x_test = [], []
-# for i in xTrain:
-#     embeddings = []
-#     for j in range(len(i)):
-#         embeddings.append(i[j][1])
-    
-#     x_train.append(embeddings)
-
-# for i in xTest:
-#     embeddings = []
-#     for j in range(len(i)):
-#         embeddings.append(i[j][1])
-    
-#     x_test.append(embeddings)
-
-# hidden = PaddedTreeRNN(x_train, y_train, [311, 64, 2], "relu", 0.03, 5)
-# hidden.runModel(x_train, y_train, x_test, y_test)
-# print()

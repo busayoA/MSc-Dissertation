@@ -201,8 +201,6 @@ class Visitor(ast.NodeVisitor):
                 self.edges.append([nodeEmbedding, childEmbedding])
 
                 if child not in self.nodes:
-                    childEmbedding = self.visitSpecial(child)
-                    childEmbedding = 1/hash(child) + 1/hash(childEmbedding) * 0.005
                     self.nodes.append(childEmbedding)
                     self.generic_visit(child)
 
@@ -213,8 +211,6 @@ class Visitor(ast.NodeVisitor):
                 self.edges.append([nodeEmbedding, childEmbedding])
 
                 if child not in self.nodes:
-                    childEmbedding = self.visitSpecial(child)
-                    childEmbedding = 1/hash(child) + 1/hash(childEmbedding) * 0.005
                     self.nodes.append(childEmbedding)
                     self.generic_visit(child)
 
