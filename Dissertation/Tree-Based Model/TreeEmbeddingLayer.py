@@ -1,6 +1,6 @@
 import random
 import tensorflow as tf
-import parseFiles as pf
+import parseTreeFiles as pf
 from Node import Node
 from typing import List
 from os.path import dirname, join

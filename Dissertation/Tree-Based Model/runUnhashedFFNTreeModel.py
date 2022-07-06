@@ -5,11 +5,12 @@ from os.path import dirname, join
 
 current_dir = dirname(__file__)
 
-x_train, y_train, x_test, y_test = dp.getData(True)
+x_train, y_train, x_test, y_test = dp.getData(False)
 y_train = tf.keras.utils.to_categorical(y_train)
 y_test = tf.keras.utils.to_categorical(y_test)
 
 segmentCount = 40
+
 model = TreeNN(x_train, y_train, [0], "", 0.0, 0)
 
 x_train_usum, x_test_usum = [], []
@@ -45,7 +46,7 @@ for i in x_train:
     x_train_uprod.append(uProd[0])
 
 for i in x_test:
-     # i = [i, i, i, i, i, i, i, i, i, i]
+        # i = [i, i, i, i, i, i, i, i, i, i]
     # i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i]
     i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i,  i, i, i, i, i, i, i, i, i, i]
     i = tf.convert_to_tensor(i)
@@ -82,13 +83,6 @@ x_test_umean = tf.convert_to_tensor(x_test_umean)
 x_test_umax = tf.convert_to_tensor(x_test_umax)
 x_test_umin = tf.convert_to_tensor(x_test_umin)
 x_test_uprod = tf.convert_to_tensor(x_test_uprod)
-
-# filenameUSum = join(current_dir, "./Models/unsorted_sum.hdf5")
-# filenameUMean = join(current_dir, "./Models/unsorted_mean.hdf5")
-# filenameUMax = join(current_dir, "./Models/unsorted_max.hdf5")
-# filenameUMin = join(current_dir, "./Models/unsorted_min.hdf5")
-# filenameUProd = join(current_dir, "./Models/unsorted_prod.hdf5")
-
 
 # USING RELU ACTIVATION
 print("RUNNING RNN MODELS USING UNSORTED SEGMENTATION AND UNHASHED NODES")
@@ -146,7 +140,7 @@ x_train_umin, x_test_umin = [], []
 x_train_uprod, x_test_uprod = [], []
 
 for i in x_train:
-     # i = [i, i, i, i, i, i, i, i, i, i]
+    # i = [i, i, i, i, i, i, i, i, i, i]
     # i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i]
     i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i,  i, i, i, i, i, i, i, i, i, i]
     i = tf.convert_to_tensor(i)
@@ -172,7 +166,7 @@ for i in x_train:
     x_train_uprod.append(uProd[0])
 
 for i in x_test:
-     # i = [i, i, i, i, i, i, i, i, i, i]
+    # i = [i, i, i, i, i, i, i, i, i, i]
     # i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i]
     i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i,  i, i, i, i, i, i, i, i, i, i]
     i = tf.convert_to_tensor(i)
@@ -246,6 +240,7 @@ print()
 # USING LOGSIGMOID ACTIVATION
 print("SORTED SEGMENT SUM AND LOGSIGMOID")
 model2c = TreeNN(x_train, y_train, [segmentCount, 64, 64, 2], "logsigmoid", 0.05, 30)
+model2c.runFFModel(x_train_usum, y_train, x_test_usum, y_test)
 print("SORTED SEGMENT MEAN AND LOGSIGMOID")
 model2c.runFFModel(x_train_umean, y_train, x_test_umean, y_test)
 print("SORTED SEGMENT MAX AND LOGSIGMOID")

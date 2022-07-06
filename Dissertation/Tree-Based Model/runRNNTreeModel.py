@@ -1,5 +1,5 @@
-import DataProcessor as dp
-from TreeRNN import TreeRNN
+import TreeDataProcessor as dp
+from TreeNN import TreeNN
 import tensorflow as tf
 from os.path import dirname, join
 
@@ -9,9 +9,10 @@ x_train, y_train, x_test, y_test = dp.getData(False)
 y_train = tf.keras.utils.to_categorical(y_train)
 y_test = tf.keras.utils.to_categorical(y_test)
 
+segmentCount = 40
+model = TreeNN(x_train, y_train, [0], "", 0.0, 0)
 
-model = TreeRNN(x_train, y_train, [0], "", 0.0, 0)
-
+print("RUNNING RNN MODELS USING UNSORTED SEGMENTATION AND UNHASHED NODES")
 x_train_usum, x_test_usum = [], []
 x_train_umean, x_test_umean = [], []
 x_train_umax, x_test_umax = [], []
@@ -19,51 +20,55 @@ x_train_umin, x_test_umin = [], []
 x_train_uprod, x_test_uprod = [], []
 
 for i in x_train:
-    i = [i, i, i, i, i, i, i, i, i, i]
+    # i = [i, i, i, i, i, i, i, i, i, i]
+    # i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i]
+    i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i,  i, i, i, i, i, i, i, i, i, i]
     i = tf.convert_to_tensor(i)
 
-    uSum = model.segmentationLayer("unsorted_sum", i)
-    uSum = tf.reshape(uSum, (len(uSum[0]), 10))
+    uSum = model.segmentationLayer("unsorted_sum", i, segmentCount)
+    uSum = tf.reshape(uSum, (len(uSum[0]), segmentCount))
     x_train_usum.append(uSum[0])
 
-    uMean = model.segmentationLayer("unsorted_mean", i)
-    uMean = tf.reshape(uMean, (len(uMean[0]), 10))
+    uMean = model.segmentationLayer("unsorted_mean", i, segmentCount)
+    uMean = tf.reshape(uMean, (len(uMean[0]), segmentCount))
     x_train_umean.append(uMean[0])
 
-    uMax = model.segmentationLayer("unsorted_max", i)
-    uMax = tf.reshape(uMax, (len(uMax[0]), 10))
+    uMax = model.segmentationLayer("unsorted_max", i, segmentCount)
+    uMax = tf.reshape(uMax, (len(uMax[0]), segmentCount))
     x_train_umax.append(uMax[0])
 
-    uMin = model.segmentationLayer("unsorted_min", i)
-    uMin = tf.reshape(uMin, (len(uMin[0]), 10))
+    uMin = model.segmentationLayer("unsorted_min", i, segmentCount)
+    uMin = tf.reshape(uMin, (len(uMin[0]), segmentCount))
     x_train_umin.append(uMin[0])
 
-    uProd = model.segmentationLayer("unsorted_prod", i)
-    uProd = tf.reshape(uProd, (len(uProd[0]), 10))
+    uProd = model.segmentationLayer("unsorted_prod", i, segmentCount)
+    uProd = tf.reshape(uProd, (len(uProd[0]), segmentCount))
     x_train_uprod.append(uProd[0])
 
 for i in x_test:
-    i = [i, i, i, i, i, i, i, i, i, i]
+     # i = [i, i, i, i, i, i, i, i, i, i]
+    # i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i]
+    i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i,  i, i, i, i, i, i, i, i, i, i]
     i = tf.convert_to_tensor(i)
 
-    uSum = model.segmentationLayer("unsorted_sum", i)
-    uSum = tf.reshape(uSum, (len(uSum[0]), 10))
+    uSum = model.segmentationLayer("unsorted_sum", i, segmentCount)
+    uSum = tf.reshape(uSum, (len(uSum[0]), segmentCount))
     x_test_usum.append(uSum[0])
 
-    uMean = model.segmentationLayer("unsorted_mean", i)
-    uMean = tf.reshape(uMean, (len(uMean[0]), 10))
+    uMean = model.segmentationLayer("unsorted_mean", i, segmentCount)
+    uMean = tf.reshape(uMean, (len(uMean[0]), segmentCount))
     x_test_umean.append(uMean[0])
 
-    uMax = model.segmentationLayer("unsorted_max", i)
-    uMax = tf.reshape(uMax, (len(uMax[0]), 10))
+    uMax = model.segmentationLayer("unsorted_max", i, segmentCount)
+    uMax = tf.reshape(uMax, (len(uMax[0]), segmentCount))
     x_test_umax.append(uMax[0])
 
-    uMin = model.segmentationLayer("unsorted_min", i)
-    uMin = tf.reshape(uMin, (len(uMin[0]), 10))
+    uMin = model.segmentationLayer("unsorted_min", i, segmentCount)
+    uMin = tf.reshape(uMin, (len(uMin[0]), segmentCount))
     x_test_umin.append(uMin[0])
 
-    uProd = model.segmentationLayer("unsorted_prod", i)
-    uProd = tf.reshape(uProd, (len(uProd[0]), 10))
+    uProd = model.segmentationLayer("unsorted_prod", i, segmentCount)
+    uProd = tf.reshape(uProd, (len(uProd[0]), segmentCount))
     x_test_uprod.append(uProd[0])
 
 
@@ -85,10 +90,8 @@ filenameUMax = join(current_dir, "./Models/unsorted_max.hdf5")
 filenameUMin = join(current_dir, "./Models/unsorted_min.hdf5")
 filenameUProd = join(current_dir, "./Models/unsorted_prod.hdf5")
 
-""" RUN THE UNHASHED MODEL """
 
 # USING RELU ACTIVATION
-print("RUNNING RNN MODELS USING UNSORTED SEGMENTATION AND UNHASHED NODES")
 
 # x_test_seg = tf.convert_to_tensor(x_test_seg)
 print("UNSORTED SEGMENT SUM")
@@ -109,8 +112,6 @@ print()
 
 
 
-
-
 print("RUNNING RNN MODELS USING SORTED SEGMENTATION AND UNHASHED NODES")
 x_train_usum, x_test_usum = [], []
 x_train_umean, x_test_umean = [], []
@@ -119,52 +120,56 @@ x_train_umin, x_test_umin = [], []
 x_train_uprod, x_test_uprod = [], []
 
 for i in x_train:
-    i = [i, i, i, i, i, i, i, i, i, i]
+     # i = [i, i, i, i, i, i, i, i, i, i]
+    # i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i]
+    i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i,  i, i, i, i, i, i, i, i, i, i]
     i = tf.convert_to_tensor(i)
 
-    uSum = model.segmentationLayer("sorted_sum", i)
-    uSum = tf.reshape(uSum, (len(uSum[0]), 10))
+    uSum = model.segmentationLayer("sorted_sum", i, segmentCount)
+    uSum = tf.reshape(uSum, (len(uSum[0]), segmentCount))
     x_train_usum.append(uSum[0])
 
-    uMean = model.segmentationLayer("sorted_mean", i)
-    uMean = tf.reshape(uMean, (len(uMean[0]), 10))
+    uMean = model.segmentationLayer("sorted_mean", i, segmentCount)
+    uMean = tf.reshape(uMean, (len(uMean[0]), segmentCount))
     x_train_umean.append(uMean[0])
 
-    uMax = model.segmentationLayer("sorted_max", i)
-    uMax = tf.reshape(uMax, (len(uMax[0]), 10))
+    uMax = model.segmentationLayer("sorted_max", i, segmentCount)
+    uMax = tf.reshape(uMax, (len(uMax[0]), segmentCount))
     x_train_umax.append(uMax[0])
 
-    uMin = model.segmentationLayer("sorted_min", i)
-    uMin = tf.reshape(uMin, (len(uMin[0]), 10))
+    uMin = model.segmentationLayer("sorted_min", i, segmentCount)
+    uMin = tf.reshape(uMin, (len(uMin[0]), segmentCount))
     x_train_umin.append(uMin[0])
 
-    uProd = model.segmentationLayer("sorted_prod", i)
-    uProd = tf.reshape(uProd, (len(uProd[0]), 10))
+    uProd = model.segmentationLayer("sorted_prod", i, segmentCount)
+    uProd = tf.reshape(uProd, (len(uProd[0]), segmentCount))
     x_train_uprod.append(uProd[0])
 
 for i in x_test:
-    i = [i, i, i, i, i, i, i, i, i, i]
+     # i = [i, i, i, i, i, i, i, i, i, i]
+    # i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i]
+    i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i,  i, i, i, i, i, i, i, i, i, i]
     i = tf.convert_to_tensor(i)
 
 
-    uSum = model.segmentationLayer("sorted_sum", i)
-    uSum = tf.reshape(uSum, (len(uSum[0]), 10))
+    uSum = model.segmentationLayer("sorted_sum", i, segmentCount)
+    uSum = tf.reshape(uSum, (len(uSum[0]), segmentCount))
     x_test_usum.append(uSum[0])
 
-    uMean = model.segmentationLayer("sorted_mean", i)
-    uMean = tf.reshape(uMean, (len(uMean[0]), 10))
+    uMean = model.segmentationLayer("sorted_mean", i, segmentCount)
+    uMean = tf.reshape(uMean, (len(uMean[0]), segmentCount))
     x_test_umean.append(uMean[0])
 
-    uMax = model.segmentationLayer("sorted_max", i)
-    uMax = tf.reshape(uMax, (len(uMax[0]), 10))
+    uMax = model.segmentationLayer("sorted_max", i, segmentCount)
+    uMax = tf.reshape(uMax, (len(uMax[0]), segmentCount))
     x_test_umax.append(uMax[0])
 
-    uMin = model.segmentationLayer("sorted_min", i)
-    uMin = tf.reshape(uMin, (len(uMin[0]), 10))
+    uMin = model.segmentationLayer("sorted_min", i, segmentCount)
+    uMin = tf.reshape(uMin, (len(uMin[0]), segmentCount))
     x_test_umin.append(uMin[0])
 
-    uProd = model.segmentationLayer("sorted_prod", i)
-    uProd = tf.reshape(uProd, (len(uProd[0]), 10))
+    uProd = model.segmentationLayer("sorted_prod", i, segmentCount)
+    uProd = tf.reshape(uProd, (len(uProd[0]), segmentCount))
     x_test_uprod.append(uProd[0])
 
 
@@ -204,8 +209,10 @@ print()
 
 
 
-
-
+"""USING HASHED NODE EMBEDDINGS"""
+x_train, y_train, x_test, y_test = dp.getData(True)
+y_train = tf.keras.utils.to_categorical(y_train)
+y_test = tf.keras.utils.to_categorical(y_test)
 
 print("RUNNING RNN MODELS USING UNSORTED SEGMENTATION AND HASHED NODES")
 x_train_usum, x_test_usum = [], []
@@ -215,52 +222,56 @@ x_train_umin, x_test_umin = [], []
 x_train_uprod, x_test_uprod = [], []
 
 for i in x_train:
-    i = [i, i, i, i, i, i, i, i, i, i]
+     # i = [i, i, i, i, i, i, i, i, i, i]
+    # i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i]
+    i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i,  i, i, i, i, i, i, i, i, i, i]
     i = tf.convert_to_tensor(i)
 
-    uSum = model.segmentationLayer("unsorted_sum", i)
-    uSum = tf.reshape(uSum, (len(uSum[0]), 10))
+    uSum = model.segmentationLayer("unsorted_sum", i, segmentCount)
+    uSum = tf.reshape(uSum, (len(uSum[0]), segmentCount))
     x_train_usum.append(uSum[0])
 
-    uMean = model.segmentationLayer("unsorted_mean", i)
-    uMean = tf.reshape(uMean, (len(uMean[0]), 10))
+    uMean = model.segmentationLayer("unsorted_mean", i, segmentCount)
+    uMean = tf.reshape(uMean, (len(uMean[0]), segmentCount))
     x_train_umean.append(uMean[0])
 
-    uMax = model.segmentationLayer("unsorted_max", i)
-    uMax = tf.reshape(uMax, (len(uMax[0]), 10))
+    uMax = model.segmentationLayer("unsorted_max", i, segmentCount)
+    uMax = tf.reshape(uMax, (len(uMax[0]), segmentCount))
     x_train_umax.append(uMax[0])
 
-    uMin = model.segmentationLayer("unsorted_min", i)
-    uMin = tf.reshape(uMin, (len(uMin[0]), 10))
+    uMin = model.segmentationLayer("unsorted_min", i, segmentCount)
+    uMin = tf.reshape(uMin, (len(uMin[0]), segmentCount))
     x_train_umin.append(uMin[0])
 
-    uProd = model.segmentationLayer("unsorted_prod", i)
-    uProd = tf.reshape(uProd, (len(uProd[0]), 10))
+    uProd = model.segmentationLayer("unsorted_prod", i, segmentCount)
+    uProd = tf.reshape(uProd, (len(uProd[0]), segmentCount))
     x_train_uprod.append(uProd[0])
 
 for i in x_test:
-    i = [i, i, i, i, i, i, i, i, i, i]
+     # i = [i, i, i, i, i, i, i, i, i, i]
+    # i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i]
+    i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i]
     i = tf.convert_to_tensor(i)
 
 
-    uSum = model.segmentationLayer("unsorted_sum", i)
-    uSum = tf.reshape(uSum, (len(uSum[0]), 10))
+    uSum = model.segmentationLayer("unsorted_sum", i, segmentCount)
+    uSum = tf.reshape(uSum, (len(uSum[0]), segmentCount))
     x_test_usum.append(uSum[0])
 
-    uMean = model.segmentationLayer("unsorted_mean", i)
-    uMean = tf.reshape(uMean, (len(uMean[0]), 10))
+    uMean = model.segmentationLayer("unsorted_mean", i, segmentCount)
+    uMean = tf.reshape(uMean, (len(uMean[0]), segmentCount))
     x_test_umean.append(uMean[0])
 
-    uMax = model.segmentationLayer("unsorted_max", i)
-    uMax = tf.reshape(uMax, (len(uMax[0]), 10))
+    uMax = model.segmentationLayer("unsorted_max", i, segmentCount)
+    uMax = tf.reshape(uMax, (len(uMax[0]), segmentCount))
     x_test_umax.append(uMax[0])
 
-    uMin = model.segmentationLayer("unsorted_min", i)
-    uMin = tf.reshape(uMin, (len(uMin[0]), 10))
+    uMin = model.segmentationLayer("unsorted_min", i, segmentCount)
+    uMin = tf.reshape(uMin, (len(uMin[0]), segmentCount))
     x_test_umin.append(uMin[0])
 
-    uProd = model.segmentationLayer("unsorted_prod", i)
-    uProd = tf.reshape(uProd, (len(uProd[0]), 10))
+    uProd = model.segmentationLayer("unsorted_prod", i, segmentCount)
+    uProd = tf.reshape(uProd, (len(uProd[0]), segmentCount))
     x_test_uprod.append(uProd[0])
 
 
@@ -303,7 +314,7 @@ print()
 
 
 
-print("RUNNING RNN MODELS USING UNSORTED SEGMENTATION AND HASHED NODES")
+print("RUNNING RNN MODELS USING SORTED SEGMENTATION AND HASHED NODES")
 x_train_usum, x_test_usum = [], []
 x_train_umean, x_test_umean = [], []
 x_train_umax, x_test_umax = [], []
@@ -311,51 +322,55 @@ x_train_umin, x_test_umin = [], []
 x_train_uprod, x_test_uprod = [], []
 
 for i in x_train:
-    i = [i, i, i, i, i, i, i, i, i, i]
+     # i = [i, i, i, i, i, i, i, i, i, i]
+    # i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i]
+    i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i,  i, i, i, i, i, i, i, i, i, i]
     i = tf.convert_to_tensor(i)
 
-    uSum = model.segmentationLayer("sorted_sum", i)
-    uSum = tf.reshape(uSum, (len(uSum[0]), 10))
+    uSum = model.segmentationLayer("sorted_sum", i, segmentCount)
+    uSum = tf.reshape(uSum, (len(uSum[0]), segmentCount))
     x_train_usum.append(uSum[0])
 
-    uMean = model.segmentationLayer("sorted_mean", i)
-    uMean = tf.reshape(uMean, (len(uMean[0]), 10))
+    uMean = model.segmentationLayer("sorted_mean", i, segmentCount)
+    uMean = tf.reshape(uMean, (len(uMean[0]), segmentCount))
     x_train_umean.append(uMean[0])
 
-    uMax = model.segmentationLayer("sorted_max", i)
-    uMax = tf.reshape(uMax, (len(uMax[0]), 10))
+    uMax = model.segmentationLayer("sorted_max", i, segmentCount)
+    uMax = tf.reshape(uMax, (len(uMax[0]), segmentCount))
     x_train_umax.append(uMax[0])
 
-    uMin = model.segmentationLayer("sorted_min", i)
-    uMin = tf.reshape(uMin, (len(uMin[0]), 10))
+    uMin = model.segmentationLayer("sorted_min", i, segmentCount)
+    uMin = tf.reshape(uMin, (len(uMin[0]), segmentCount))
     x_train_umin.append(uMin[0])
 
-    uProd = model.segmentationLayer("sorted_prod", i)
-    uProd = tf.reshape(uProd, (len(uProd[0]), 10))
+    uProd = model.segmentationLayer("sorted_prod", i, segmentCount)
+    uProd = tf.reshape(uProd, (len(uProd[0]), segmentCount))
     x_train_uprod.append(uProd[0])
 
 for i in x_test:
-    i = [i, i, i, i, i, i, i, i, i, i]
+     # i = [i, i, i, i, i, i, i, i, i, i]
+    # i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i]
+    i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i,  i, i, i, i, i, i, i, i, i, i]
     i = tf.convert_to_tensor(i)
 
-    uSum = model.segmentationLayer("sorted_sum", i)
-    uSum = tf.reshape(uSum, (len(uSum[0]), 10))
+    uSum = model.segmentationLayer("sorted_sum", i, segmentCount)
+    uSum = tf.reshape(uSum, (len(uSum[0]), segmentCount))
     x_test_usum.append(uSum[0])
 
-    uMean = model.segmentationLayer("sorted_mean", i)
-    uMean = tf.reshape(uMean, (len(uMean[0]), 10))
+    uMean = model.segmentationLayer("sorted_mean", i, segmentCount)
+    uMean = tf.reshape(uMean, (len(uMean[0]), segmentCount))
     x_test_umean.append(uMean[0])
 
-    uMax = model.segmentationLayer("sorted_max", i)
-    uMax = tf.reshape(uMax, (len(uMax[0]), 10))
+    uMax = model.segmentationLayer("sorted_max", i, segmentCount)
+    uMax = tf.reshape(uMax, (len(uMax[0]), segmentCount))
     x_test_umax.append(uMax[0])
 
-    uMin = model.segmentationLayer("sorted_min", i)
-    uMin = tf.reshape(uMin, (len(uMin[0]), 10))
+    uMin = model.segmentationLayer("sorted_min", i, segmentCount)
+    uMin = tf.reshape(uMin, (len(uMin[0]), segmentCount))
     x_test_umin.append(uMin[0])
 
-    uProd = model.segmentationLayer("sorted_prod", i)
-    uProd = tf.reshape(uProd, (len(uProd[0]), 10))
+    uProd = model.segmentationLayer("sorted_prod", i, segmentCount)
+    uProd = tf.reshape(uProd, (len(uProd[0]), segmentCount))
     x_test_uprod.append(uProd[0])
 
 
