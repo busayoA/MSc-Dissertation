@@ -31,27 +31,6 @@ class TreeRNN(AbstractTree):
             tree = self.activationFunction(tree)
         return tree
 
-    def getAggregationFunction(self, aggregationFunction: str):
-        aggregationFunction = aggregationFunction.lower()
-        if aggregationFunction == "max":
-            return tf.reduce_max
-        elif aggregationFunction == "logsumexp":
-            return tf.reduce_mean
-        elif aggregationFunction == "mean":
-            return tf.reduce_mean
-        elif aggregationFunction == "min":
-            return tf.reduce_min
-        elif aggregationFunction == "prod":
-            return tf.reduce_prod
-        elif aggregationFunction == "sum":
-            return tf.reduce_sum
-        elif aggregationFunction == "std":
-            return tf.math.reduce_std
-        elif aggregationFunction == "var":
-            return tf.math.reduce_variance
-        else:
-            return None
-
     def segmentationFunction(self, segmentationFunction: str):
         segmentationFunction = segmentationFunction.split("_")
         if segmentationFunction[0] == "sorted":
@@ -78,11 +57,6 @@ class TreeRNN(AbstractTree):
                 return tf.math.unsorted_segment_prod
         else:
             return None
-
-    def aggregationLayer(self, aggregationFunction: str, nodeEmbeddings: List, axis: int):
-        # nodeEmbeddings = tf.reshape(nodeEmbeddings, (1, len(nodeEmbeddings)))
-        aggregationFunction = self.getAggregationFunction(aggregationFunction)
-        return aggregationFunction(nodeEmbeddings, axis=axis)
 
     def segmentationLayer(self, segmentationFunction: str, nodeEmbeddings: tf.Tensor):
         seg = segmentationFunction.lower()
@@ -154,9 +128,3 @@ class TreeRNN(AbstractTree):
         model.fit(x_train, y_train, epochs=30, batch_size=64, validation_data=(x_test, y_test))
         
         model.save(filename)
-
-        # model.add(dense)
-        # model.summary()
-        # finalOutput, finalStates = rnn(x_train)
-
-        # return finalOutput, finalStates
