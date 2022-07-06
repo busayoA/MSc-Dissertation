@@ -1,9 +1,9 @@
-import random
 import tensorflow as tf
 import numpy as np
 from typing import List
 from Node import Node
 from AbstractTree import AbstractTree
+from keras.models import Sequential
 
 class TreeRNN(AbstractTree):
     def __init__(self, trees: List[Node], labels, layers, activationFunction: str, learningRate: float, 
@@ -14,10 +14,8 @@ class TreeRNN(AbstractTree):
         # input Layer
 
         for i in range(1, self.layerCount):
-            self.weights[i] = tf.Variable(tf.random.normal(shape=(self.layers[i-1], 1)))
-            if i == self.layerCount - 1:
-                self.weights[i] = tf.Variable(tf.random.normal(shape=(2, 64)))
-            self.bias[i] = tf.Variable(tf.random.normal(shape=(1, 1)))
+            self.weights[i] = tf.Variable(tf.random.normal(shape=(self.layers[i],  self.layers[i-1])))
+            self.bias[i] = tf.Variable(tf.random.normal(shape=(self.layers[i], 1)))
 
     def updateWeights(self):
         for i in range(1, self.layerCount):
@@ -27,15 +25,9 @@ class TreeRNN(AbstractTree):
             if self.biasDeltas[i] is not None:
                 self.bias[i].assign_sub(self.learningRate * self.biasDeltas[i])
 
-    def RNNLayer(self, tree):
+    def FFLayer(self, tree):
         for i in range(1, self.layerCount): 
-            weights = self.weights[i]
-            if i == self.layerCount - 1:
-                weights = tf.transpose(self.weights[i])
-            if i == 1:
-                tree = (tree * weights) + self.bias[i]
-            else:
-                tree = tf.matmul(tree.numpy(), tf.transpose(self.weights[i])) + self.bias[i]
+            tree = tf.matmul(tree, tf.transpose(self.weights[i])) + tf.transpose(self.bias[i])
             tree = self.activationFunction(tree)
         return tree
 
@@ -62,7 +54,7 @@ class TreeRNN(AbstractTree):
 
     def segmentationFunction(self, segmentationFunction: str):
         segmentationFunction = segmentationFunction.split("_")
-        if segmentationFunction[0] == "unsorted":
+        if segmentationFunction[0] == "sorted":
             if segmentationFunction[1] == "sum":
                 return tf.math.segment_sum
             if segmentationFunction[1] == "mean":
@@ -73,7 +65,7 @@ class TreeRNN(AbstractTree):
                 return tf.math.segment_min
             if segmentationFunction[1] == "prod":
                 return tf.math.segment_prod
-        elif segmentationFunction[0] == "sorted":
+        elif segmentationFunction[0] == "unsorted":
             if segmentationFunction[1] == "sum":
                 return tf.math.unsorted_segment_sum
             if segmentationFunction[1] == "mean":
@@ -83,7 +75,7 @@ class TreeRNN(AbstractTree):
             if segmentationFunction[1] == "min":
                 return tf.math.unsorted_segment_min
             if segmentationFunction[1] == "prod":
-                return tf.math.unsorted_segment_min
+                return tf.math.unsorted_segment_prod
         else:
             return None
 
@@ -92,13 +84,18 @@ class TreeRNN(AbstractTree):
         aggregationFunction = self.getAggregationFunction(aggregationFunction)
         return aggregationFunction(nodeEmbeddings, axis=axis)
 
-    def segmentationLayer(self, segmentationFunction: str, nodeEmbeddings: List):
+    def segmentationLayer(self, segmentationFunction: str, nodeEmbeddings: tf.Tensor):
+        seg = segmentationFunction.lower()
         segmentationFunction = self.segmentationFunction(segmentationFunction)
-        return segmentationFunction(nodeEmbeddings, tf.constant([0, 1, 2, 4, 5, 6, 7, 8, 9]))
+
+        if seg.split("_")[0] == "unsorted":
+            return segmentationFunction(nodeEmbeddings, tf.constant([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), 10)
+        else:
+            return segmentationFunction(nodeEmbeddings, tf.constant([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]))
 
     def backPropagate(self, tree, yValues):
         with tf.GradientTape(persistent=True) as tape: 
-            output = self.RNNLayer(tree)
+            output = self.FFLayer(tree)
             loss = self.lossFunction(output, yValues)
         
         for i in range(1, self.layerCount):
@@ -110,35 +107,56 @@ class TreeRNN(AbstractTree):
         self.updateWeights()
         return loss.numpy()
 
-    def runModel(self, x_train, y_train, x_test, y_test):
+    def runFFModel(self, x_train, y_train, x_test, y_test):
         index = 0
         loss = 0.0
         metrics = {'trainingLoss': [], 'trainingAccuracy': [], 'validationAccuracy': []}
         self.initialiseWeights()
         for i in range(self.epochs):
+            print('Epoch {}'.format(i), end='........')
             predictions = []
-            for tree in x_train:
-                if index % 5 == 0:
-                    print(end=".")
-                if index >= len(y_train):
-                    index = 0
 
-                # FIRST FORWARD PASS
-                loss = self.backPropagate(tree, y_train[index])
-                # SECOND FORWARD PASS/RECURRENT LOOP
-                newOutputs = self.RNNLayer(tree)
-                newOutputs = tf.reshape(newOutputs, (2, 1))
-                pred = tf.argmax(tf.nn.softmax(newOutputs), axis = 1)
-                predictions.append(pred)
-                index += 1
+            if index % 5 == 0:
+                print(end=".")
+            if index >= len(y_train):
+                index = 0
+
+            # FIRST FORWARD PASS
+            loss = self.backPropagate(x_train, y_train[index])
+            # SECOND FORWARD PASS/RECURRENT LOOP
+            newOutputs = self.FFLayer(x_train)
+            pred = tf.argmax(tf.nn.softmax(newOutputs), axis = 1)
+            predictions.append(pred)
+            index += 1
 
             predictions = tf.convert_to_tensor(predictions)
-            print(predictions)
+            # print(predictions)
             metrics['trainingLoss'].append(loss)
             unseenPredictions = self.makePrediction(x_test)
             metrics['trainingAccuracy'].append(np.mean(np.argmax(y_train, axis=1) == predictions.numpy()))
             metrics['validationAccuracy'].append(np.mean(np.argmax(y_test, axis=1) == unseenPredictions.numpy()))
-            print('\Loss:', metrics['trainingLoss'][-1], 'Accuracy:', metrics['trainingAccuracy'][-1], 
+            print('\tLoss:', metrics['trainingLoss'][-1], 'Accuracy:', metrics['trainingAccuracy'][-1], 
             'Validation Accuracy:', metrics['validationAccuracy'][-1])
         return metrics
 
+    def runRNNModel(self, x_train, y_train, x_test, y_test, filename):
+        model = Sequential()
+        model.add(tf.keras.layers.InputLayer(input_shape=(x_train.shape[1], 1)))
+        model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(128, input_shape=(x_train.shape[1], 1), return_sequences=True)))
+        model.add(tf.keras.layers.LSTM(128))
+        model.add(tf.keras.layers.Dropout(0.3))
+        model.add(tf.keras.layers.Dense(2, activation='sigmoid'))
+
+        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+        print(model.summary())
+        
+        model.fit(x_train, y_train, epochs=30, batch_size=64, validation_data=(x_test, y_test))
+        
+        model.save(filename)
+
+        # model.add(dense)
+        # model.summary()
+        # finalOutput, finalStates = rnn(x_train)
+
+        # return finalOutput, finalStates

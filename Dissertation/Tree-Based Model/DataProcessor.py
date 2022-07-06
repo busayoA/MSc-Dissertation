@@ -130,8 +130,6 @@ quickTree, quickLabels = parser.parse(quick)
 x = mergeTree + quickTree 
 y = mergeLabels + quickLabels 
 
-y = tf.keras.utils.to_categorical(y)
-
 pairs = attachLabels(x, y)
 split = int(0.8 * len(pairs))
 train, test = pairs[:split], pairs[split:]
@@ -144,13 +142,12 @@ quickHashTree, quickLabels = hashParser.parse(quick)
 
 x_hash = mergeHashTree + quickHashTree 
 y_hash = mergeLabels + quickLabels 
-y_hash = tf.keras.utils.to_categorical(y_hash)
-pairs = attachLabels(x_hash, y_hash)
-split = int(0.8 * len(pairs))
-train, test = pairs[:split], pairs[split:]
+hashedPairs = attachLabels(x_hash, y_hash)
+split_hash = int(0.8 * len(hashedPairs))
+train_hash, test_hash = hashedPairs[:split], hashedPairs[split:]
 
 # saveData(train, test)
-# saveHashData(train, test)
+# saveHashData(train_hash, test_hash)
 # print()
 
 

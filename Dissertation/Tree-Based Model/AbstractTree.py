@@ -38,11 +38,10 @@ class AbstractTree(ABC):
 
     def makePrediction(self, x_test):
         predictions = []
-        for tree in x_test:
-            output = self.RNNLayer(tree)
-            output = tf.reshape(output, (2, 1))
-            prediction = tf.argmax(tf.nn.softmax(output), axis=1)
-            predictions.append(prediction)
+
+        output = self.FFLayer(x_test)
+        prediction = tf.argmax(tf.nn.softmax(output), axis=1)
+        predictions.append(prediction)
         return tf.convert_to_tensor(predictions)
 
     @abstractmethod
@@ -50,7 +49,7 @@ class AbstractTree(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def RNNLayer(self, tree):
+    def FFLayer(self, tree):
         raise NotImplementedError()
 
     @abstractmethod
@@ -62,5 +61,5 @@ class AbstractTree(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def runModel(self, x_train, y_train, x_test, y_test):
+    def runFFModel(self, x_train, y_train, x_test, y_test):
         raise NotImplementedError()
