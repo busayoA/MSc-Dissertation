@@ -54,33 +54,33 @@ class HiddenGraphLayer():
         elif self.layerName == "output" or self.layerName == "dense":
             return self.DenseLayer(self.neurons, self.activationFunction, True)
 
-    def SGDClassifier(self, trainSet, trainCategories, testSet):
+    def SGDClassifier(self, x_train, y_train, x_test):
         text_clf = Pipeline([('clf', SGDClassifier())])
-        text_clf.fit(trainSet, trainCategories)
+        text_clf.fit(x_train, y_train)
 
-        predictions = text_clf.predict(testSet)
+        predictions = text_clf.predict(x_test)
         return predictions
 
-    def SVMClassifier(self, trainSet, trainCategories, testSet):
+    def SVMClassifier(self, x_train, y_train, x_test):
         text_clf = Pipeline([('clf', LinearSVC())])
-        text_clf.fit(trainSet, trainCategories)
+        text_clf.fit(x_train, y_train)
 
-        predictions = text_clf.predict(testSet)
+        predictions = text_clf.predict(x_test)
         return predictions
 
-    def rfClassify(self, trainSet, trainCategories, testSet):
+    def rfClassify(self, x_train, y_train, x_test):
         """A RANDOM FOREST CLASSIFIER"""
         text_clf = Pipeline([('clf', RandomForestClassifier(n_estimators=5))])
-        text_clf.fit(trainSet, trainCategories)
-        predictions = text_clf.predict(testSet)
+        text_clf.fit(x_train, y_train)
+        predictions = text_clf.predict(x_test)
         return predictions
     
-    def nbClassify(self, trainSet, trainCategories, testSet):
+    def nbClassify(self, x_train, y_train, x_test):
         """A MULTINOMINAL NB CLASSIFIER"""
         # Build a pipeline to simplify the process of creating the vector matrix, transforming to tf-idf and classifying
         text_clf = Pipeline([('clf', MultinomialNB())])
-        text_clf.fit(trainSet, trainCategories)
-        predictions = text_clf.predict(testSet)
+        text_clf.fit(x_train, y_train)
+        predictions = text_clf.predict(x_test)
         return predictions
 
     def RNNLayer(self, neurons: int, activationFunction: str, useBias: bool):
