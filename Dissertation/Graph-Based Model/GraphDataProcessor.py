@@ -153,10 +153,10 @@ def runProcessor4():
 
     xTrain2, xTest2 = [], []
     for i in x_train2:
-        xTrain2.append(i)
+        xTrain2.append(list(i.numpy()))
 
     for i in x_test2:
-        xTest2.append(i)
+        xTest2.append(list(i.numpy()))
     return xTrain2, yTrain, xTest2, yTest
 
 

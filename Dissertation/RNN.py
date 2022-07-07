@@ -1,17 +1,13 @@
 import tensorflow as tf
-import numpy as np
 from typing import List
 
+class RNN():
+    def __init__(self):
+        pass
 
-class HiddenGraphLayer():
-    def __init__(self, layerName: str, trainTestData: List = None, learningRate: float = None, activationFunction: str = None, 
+    def __init__(self, layerName: str, learningRate: float = None, activationFunction: str = None, 
     neurons:int = None, dropoutRate: float =  None, hiddenLayerCount: int = None, hiddenLayerUnits: List[int] = None):
         self.layerName = layerName.lower()
-        if trainTestData is not None:
-            self.x_train = trainTestData[0]
-            self.y_train = trainTestData[1]
-            self.x_test = trainTestData[2]
-            self.y_test = trainTestData[3]
         if learningRate is not None:
             self.learningRate = learningRate
         
@@ -31,22 +27,14 @@ class HiddenGraphLayer():
             self.hiddenLayerUnits = hiddenLayerUnits
 
     def chooseModel(self, inputShape: tuple = None, returnSequences:bool = None):
-        if self.layerName == "ffn":
-            return self.FFLayer(self.hiddenLayerCount, self.hiddenLayerUnits, self.activationFunction)
-        elif self.layerName == "lstm":
+        if self.layerName == "lstm":
             return self.LSTMLayer(self.neurons, self.activationFunction, True, inputShape, returnSequences)
+        elif self.layerName == "rnn":
+            return self.RNNLayer(self.neurons, self.activationFunction, True)
         elif self.layerName == "gru":
             return self.GRULayer(self.neurons, self.activationFunction, True, inputShape, returnSequences)
         elif self.layerName == "dropout":
             return self.DropoutLayer(self.dropoutRate)
-        elif self.layerName == "sgd":
-            return self.SGDClassifier(self.x_train, self.y_train, self.x_test)
-        elif self.layerName == "svm":
-            return self.SVMClassifier(self.x_train, self.y_train, self.x_test)
-        elif self.layerName == "nb":
-            return self.nbClassify(self.x_train, self.y_train, self.x_test)
-        elif self.layerName == "rf":
-            return self.rfClassify(self.x_train, self.y_train, self.x_test)
         elif self.layerName == "output" or self.layerName == "dense":
             return self.DenseLayer(self.neurons, self.activationFunction, True)
 
@@ -54,23 +42,13 @@ class HiddenGraphLayer():
         activationFunction = self.getActivationFunction(activationFunction)
         return tf.keras.layers.SimpleRNN(neurons, activation=activationFunction, use_bias=useBias)
 
-    def LSTMLayer(self, neurons: int, activationFunction: str, useBias: bool, inputShape: tuple, returnSequences: bool):
+    def LSTMLayer(self, neurons: int, activationFunction: str, useBias: bool, inputShape, returnSequences):
         activationFunction = self.getActivationFunction(activationFunction)
         return tf.keras.layers.LSTM(neurons, activation=activationFunction, use_bias=useBias, return_sequences=returnSequences, input_shape=inputShape)
 
     def GRULayer(self, neurons: int, activationFunction: str, useBias: bool, inputShape, returnSequences):
         activationFunction = self.getActivationFunction(activationFunction)
         return tf.keras.layers.GRU(neurons, activation=activationFunction, use_bias=useBias, return_sequences=returnSequences, input_shape=inputShape)
-
-    def FFLayer(self, hiddenLayerCount: int, hiddenLayerUnits: List[int], activationFunction: str):
-        activationFunction = self.getActivationFunction(activationFunction)
-        if len(hiddenLayerUnits) != hiddenLayerCount:
-            raise Exception("Something is wrong somewhere, check that again")
-
-        self.layers = []
-        for i in range(hiddenLayerCount): 
-            self.layers.append(self.DenseLayer(hiddenLayerUnits[i], useBias=True, activationFunction=activationFunction))
-        return self.layers
 
     def DropoutLayer(self, dropoutRate):
         if dropoutRate is None:
