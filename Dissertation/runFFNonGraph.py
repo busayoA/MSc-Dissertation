@@ -65,7 +65,7 @@ mlp4 = MLP(x_train, y_train, layers, "logsigmoid", lr, epochs)
 metrics4 = mlp4.runFFModel(x_train, y_train, x_test, y_test)
 
 
-print("USING THE MULTI-LAYER PERCEPTRON")
+print("USING THE MULTI-LAYER PERCEPTRON ANF SEGMENTATION")
 print("USING RELU")
 print("Average loss:", np.average(metrics1['trainingLoss']), "Average training accuracy:", 
 np.average(metrics1['trainingAccuracy']), "Average validation accuracy:", 

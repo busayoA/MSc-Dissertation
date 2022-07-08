@@ -80,9 +80,7 @@ class GraphDataProcessor:
             return x_train_nodes, y_train, x_test_nodes, y_test
 
     def runProcessor1(self):
-        x_train_graph, x_train_matrix, y_train, x_test_graph, x_test_matrix, y_test = self.runParser(1)
-        x_train = self.parser.prepareData(x_train_graph, x_train_matrix)
-        x_test = self.parser.prepareData(x_test_graph, x_test_matrix)
+        x_train, y_train, x_test, y_test = self.getData()
 
         total_x = x_train + x_test
         maxLen = self.getMaxLen(total_x)
@@ -97,7 +95,7 @@ class GraphDataProcessor:
         return x_train, y_train, x_test, y_test
 
     def runProcessor2(self):
-        xTrain, yTrain, xTest, yTest = self.runParser(2)
+        xTrain, yTrain, xTest, yTest = self.getData()
 
         totalX = xTrain + xTest
         maxLen = self.getMaxLen(totalX)

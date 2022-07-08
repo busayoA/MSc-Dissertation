@@ -17,17 +17,11 @@ class GraphEmbeddingLayer:
         self.nodeCopy.remove(self.root)
         self.unVectorised = self.nodeCopy
 
-        self.weights, self.bias = {}, {}
-        self.initialiseInputWeights()
-        self.embeddingFunction(self.root, None)
-        
-
-    def initialiseInputWeights(self):
+        self.weights = {}
         for i in range(len(self.nodes)):
             self.weights[i] = tf.Variable(tf.random.normal(shape=(1, 1)))
-            self.bias[i] = tf.Variable(tf.random.normal(shape=(1, 1)))
-
-
+        self.embeddingFunction(self.root, None)
+        
     def embeddingFunction(self, node, parent):
         if len(self.unVectorised) == 0:
             return self.vectors
