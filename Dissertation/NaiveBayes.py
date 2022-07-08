@@ -1,9 +1,7 @@
 import random, math
-import TreeSegmentation as seg
-import TreeDataProcessor as tdp
 from statistics import mean
 
-class GaussianNBClassifier:
+class NBClassifier:
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -80,7 +78,83 @@ class GaussianNBClassifier:
                 probabilities[value] *= self.getGaussianProbability(values[i], valMean, valStd)
 
         return probabilities
- 
+
+    def getClassPriorProbability(self, yTrain: list):
+        # P(y)
+        numZeros = yTrain.count(0)
+        numOnes = yTrain.count(1)
+        totalValues = numZeros + numOnes
+
+        priorProbZero = numZeros/totalValues
+        priorProbOne = numOnes/totalValues
+
+        return priorProbZero, priorProbOne
+
+    def getEvidence(self, xValues: list):
+        # P(X)
+        xCount = 40 #number of values in each row = segmentCount
+        evidenceProbs = []
+        numXValues = len(xValues)
+        for i in range(xCount):
+            total = []
+            evidenceProb = 0.0
+            for j in xValues:
+                current = j[i]
+                total.append(current)
+            overall = sum(total)
+            evidenceProb = overall/numXValues
+            evidenceProbs.append(evidenceProb)
+        return math.prod(evidenceProbs)
+
+    def getAllLikelihoods(self, xValues: list, yValues: list):
+        # p(X|y)
+        xCount = 40 #number of values in each row = segmentCount
+        numZeros = yValues.count(0)
+        numOnes = yValues.count(1)
+
+        mergeProbs, quickProbs = [], []
+        for i in range(xCount):
+            mergeProb, quickProb = [], []
+            for j in xValues:
+                current = j[i]
+                probXiIsMerge = current/numZeros
+                probXiIsQuick = current/numOnes
+                mergeProb.append(probXiIsMerge)
+                quickProb.append(probXiIsQuick)
+            mergeProbs.append(sum(mergeProb))
+            quickProbs.append(sum(quickProb))
+        return mergeProbs, quickProbs
+
+    def makeMultinominalPredictions(self, x: list, mergeProbs: list, quickProbs: list, priorProbMerge: float, priorProbQuick: float, evidence: float):
+        predictions = []
+        for i in range(len(x)):
+            probXGivenMergeList, probXGivenQuickList = [], []
+            for j in range(len(x[i])):
+                xValue = x[i][j]
+                probXGivenMerge = mergeProbs[j]
+                probXGivenQuick = quickProbs[j]
+                probXGivenMergeList.append(probXGivenMerge)
+                probXGivenQuickList.append(probXGivenQuick)
+
+            probMergeGivenX = (math.prod(probXGivenMergeList) * priorProbMerge)/evidence     
+            probQuickGivenX = (math.prod(probXGivenQuickList) * priorProbQuick)/evidence 
+
+            if probMergeGivenX > probQuickGivenX:
+                predictions.append(0)
+            else:
+                predictions.append(1)
+        return predictions
+
+    def multinominalNBClassifier(self, xValues: list, yValues: list, xTest: list, yTest: list):
+        # P(y|x0....x39)
+        priorProbMerge, priorProbQuick = self.getClassPriorProbability(yValues)
+        evidenceProbs = self.getEvidence(xValues)
+        mergeProbs, quickProbs = self.getAllLikelihoods(xValues, yValues) 
+
+        testPredictions = self.makeMultinominalPredictions(xTest, mergeProbs, quickProbs, priorProbMerge, priorProbQuick, evidenceProbs)
+        accuracyScore = self.calculateAccuracyScore(yTest, testPredictions)
+        return accuracyScore
+
     def makePrediction(self, classStats, xValue):
         classProbabilities = self.getClassGaussianProbability(classStats, xValue)
         label, probability = 10, -1
@@ -91,7 +165,7 @@ class GaussianNBClassifier:
                 label = value
         return label
 
-    def runNBClassifier(self, xTrain, yTrain, xTest):
+    def runGNBClassifier(self, xTrain, yTrain, xTest):
         classStats = self.collateClassStatistics(xTrain, yTrain)
         predictions = []
         for x in xTest:
@@ -100,7 +174,7 @@ class GaussianNBClassifier:
     
         return predictions
 
-    def crossValidation(self, xValues, yValues):
+    def gaussianCrossValidation(self, xValues, yValues):
         foldsX, foldsY = self.splitIntoFolds(xValues, yValues)
         accuracyScores = []
         for i in range(len(foldsX)):
@@ -117,41 +191,7 @@ class GaussianNBClassifier:
                 allTest.append(trainX)
                 allTestY.append(trainY)
             
-            predicted = self.runNBClassifier(allTrain, allY, allTest)
+            predicted = self.runGNBClassifier(allTrain, allY, allTest)
             accuracyScore = self.calculateAccuracyScore(allTestY, predicted)
             accuracyScores.append(accuracyScore)
         return mean(accuracyScores)
-
-hashed = False
-x_train_sum, x_train_mean, x_train_max, x_train_min, x_train_prod, y_train = seg.getSortedSegmentTrainData(hashed)
-x_test_sum, x_test_mean, x_test_max, x_test_min, x_test_prod, y_test = seg.getSortedSegmentTestData(hashed)
-
-x_train_sum = tdp.tensorToList(x_train_sum)
-x_test_sum = tdp.tensorToList(x_test_sum)
-
-y_train = tdp.floatToInt(y_train)
-y_test = tdp.floatToInt(y_test)
-
-
-x = []
-for i in x_train_sum:
-    x.append(i)
-for i in x_test_sum:
-    x.append(i)
-
-y = []
-for i in y_train:
-    y.append(i)
-for i in y_test:
-    y.append(i)
-# x = x_train_sum + x_test_sum
-# y = y_train + y_test
-nbc = GaussianNBClassifier(x, y)
-# # summary = nbc.collateClassStatistics(x_train_sum, y_train)
-# # labels = nbc.runNBClassifier(x_test_sum, y_test)
-
-
-# # [print(y_test[i], labels[i]) for i in range(len(labels))]
-
-print(nbc.crossValidation(x, y))
-print()

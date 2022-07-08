@@ -1,18 +1,20 @@
 from SKLearnClassifiers import SGDClassify, SVMClassify, rfClassify
-import GraphDataProcessor as gdp
+from GraphDataProcessor import GraphDataProcessor
 
+hashed = True
+gdp = GraphDataProcessor(hashed)
 
-"""RUNNING ON PADDED GRAPHS"""
-x_train, y_train, x_test, y_test = gdp.runProcessor2()
+# """RUNNING ON PADDED GRAPHS"""
+# x_train, y_train, x_test, y_test = gdp.runProcessor2()
 
-sgdUSumPadAccuracy = SGDClassify(x_train, y_train, x_test, y_test)
-print("SGD CLASSIFIER AND PADDED GRAPHS:", sgdUSumPadAccuracy)
+# sgdUSumPadAccuracy = SGDClassify(x_train, y_train, x_test, y_test)
+# print("SGD CLASSIFIER AND PADDED GRAPHS:", sgdUSumPadAccuracy)
 
-rfUSumPadAccuracy = rfClassify(x_train, y_train, x_test, y_test)
-print("RANDOM FOREST CLASSIFIER AND PADDED GRAPHS:", rfUSumPadAccuracy)
+# rfUSumPadAccuracy = rfClassify(x_train, y_train, x_test, y_test)
+# print("RANDOM FOREST CLASSIFIER AND PADDED GRAPHS:", rfUSumPadAccuracy)
 
-svmUSumPadAccuracy = SVMClassify(x_train, y_train, x_test, y_test)
-print("SVM CLASSIFIER AND PADDED GRAPHS:", svmUSumPadAccuracy)
+# svmUSumPadAccuracy = SVMClassify(x_train, y_train, x_test, y_test)
+# print("SVM CLASSIFIER AND PADDED GRAPHS:", svmUSumPadAccuracy)
 
 
 

@@ -1,7 +1,8 @@
-import GraphDataProcessor as gdp
 import numpy as np
 from RNN import RNN
+from GraphDataProcessor import GraphDataProcessor
 
+gdp = GraphDataProcessor()
 """RUNNING ON PADDED GRAPHS"""
 x_train, y_train, x_test, y_test = gdp.runProcessor1()
 

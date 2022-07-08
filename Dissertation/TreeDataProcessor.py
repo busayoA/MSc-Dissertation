@@ -18,15 +18,15 @@ def attachLabels(x, y):
 def getFileNames(hashed: bool):
     current_dir = dirname(__file__)
     if hashed is False:
-        xTrain = join(current_dir, "./Data/tree_x_train.txt")
-        yTrain = join(current_dir, "./Data/tree_y_train.txt")
-        xTest = join(current_dir, "./Data/tree_x_test.txt")
-        yTest = join(current_dir, "./Data/tree_y_test.txt")
+        xTrain = join(current_dir, "./Tree Data/tree_x_train.txt")
+        yTrain = join(current_dir, "./Tree Data/tree_y_train.txt")
+        xTest = join(current_dir, "./Tree Data/tree_x_test.txt")
+        yTest = join(current_dir, "./Tree Data/tree_y_test.txt")
     else:
-        xTrain = join(current_dir, "./Data/tree_x_train_hashed.txt")
-        yTrain = join(current_dir, "./Data/tree_y_train_hashed.txt")
-        xTest = join(current_dir, "./Data/tree_x_test_hashed.txt")
-        yTest = join(current_dir, "./Data/tree_y_test_hashed.txt")
+        xTrain = join(current_dir, "./Tree Data/tree_x_train_hashed.txt")
+        yTrain = join(current_dir, "./Tree Data/tree_y_train_hashed.txt")
+        xTest = join(current_dir, "./Tree Data/tree_x_test_hashed.txt")
+        yTest = join(current_dir, "./Tree Data/tree_y_test_hashed.txt")
 
     return xTrain, yTrain, xTest, yTest
 
