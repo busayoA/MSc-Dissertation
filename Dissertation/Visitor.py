@@ -1,59 +1,52 @@
-import ast
+import ast, re
+import networkx as nx
+from abc import ABC, abstractmethod
 
-class Visitor(ast.NodeVisitor):
+class AbstractVisitor(ast.NodeVisitor, ABC):
     def __init__(self):
         self.nodes = []
         self.edges = []
         self.adjList = []
-
-    def generic_visit(self, node):
-        if node not in self.nodes:
-            self.nodes.append(node)
-
-        if isinstance(node, ast.AST):
-            for child in list(ast.iter_child_nodes(node)):
-                for child in list(ast.iter_child_nodes(node)):
-                    self.edges.append([node, child])
-                if child not in self.nodes:
-                    self.nodes.append(child)
-                    self.generic_visit(child)
-
-        elif isinstance(node, list):
-            for child in list(ast.iter_child_nodes(node)):
-                self.edges.append([node, child])
-                if child not in self.nodes:
-                    self.nodes.append(child)
-                    self.generic_visit(child)
-
-class HashVisitor:
-    def __init__(self):
-        self.nodes = []
         self.hashedNodes = []
 
+    @abstractmethod
     def generic_visit(self, node):
-            if node not in self.nodes:
-                nodeEmbedding = self.visitSpecial(node)
-                nodeEmbedding = 1/hash(node) + 1/hash(nodeEmbedding) * 0.005
-                self.nodes.append(node)
-                self.hashedNodes.append(nodeEmbedding)
+        raise NotImplementedError()
 
-            if isinstance(node, ast.AST):
-                for child in list(ast.iter_child_nodes(node)):
-                    childEmbedding = self.visitSpecial(child)
-                    childEmbedding = 1/hash(child) + 1/hash(childEmbedding) * 0.005
+    def splitCamelCase(self, identifier: str):
+        splitIdentifier = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
+        return [i.group(0) for i in splitIdentifier]
 
-                    if child not in self.nodes:
-                        self.nodes.append(child)
-                        self.hashedNodes.append(childEmbedding)
-                        self.generic_visit(child)
+    def splitSnakeCase(self, identifier: str):
+        return identifier.split("_")
 
-            elif isinstance(node, list):
-                for child in list(ast.iter_child_nodes(node)):
-                    childEmbedding = self.visitSpecial(child)
-                    childEmbedding = 1/hash(child) + 1/hash(childEmbedding) * 0.005
-                    if child not in self.nodes:
-                        self.nodes.append(child)
-                        self.generic_visit(child)
+    def splitIdentifier(self, identifier):
+        splitId = self.splitSnakeCase(identifier)
+        finalSplitID = []
+        idParts = []
+        for part in splitId:
+            if len(part) > 0:
+                idParts.append(self.splitCamelCase(part))
+
+        if len(idParts) == 0:
+            return [identifier]
+        else:
+            for i in idParts:
+                for j in i:
+                    finalSplitID.append(j)
+
+        return finalSplitID
+        
+    def convertToGraph(self):
+        graph = nx.DiGraph()
+        graph.add_edges_from(self.edges)
+        return graph
+
+    def createAdjList(self):
+        for node in self.nodes:
+            children = list(ast.iter_child_nodes(node))
+            if len(children) > 0:
+                self.adjList.append([1/hash(node), [1/hash(child) for child in children]])
 
     def visitSpecial(self, node):
         if isinstance(node, ast.FunctionDef or ast.AsyncFunctionDef or ast.ClassDef):
@@ -106,3 +99,57 @@ class HashVisitor:
 
     def visitConstant(self, node: ast.Constant):
         return "value = " + str(node.value)
+
+class Visitor(AbstractVisitor):
+    def __init__(self):
+        super().__init__()
+
+    def generic_visit(self, node):
+        if node not in self.nodes:
+            self.nodes.append(node)
+
+        if isinstance(node, ast.AST):
+            for child in list(ast.iter_child_nodes(node)):
+                for child in list(ast.iter_child_nodes(node)):
+                    self.edges.append([node, child])
+                    if child not in self.nodes:
+                        self.nodes.append(child)
+                        self.generic_visit(child)
+
+        elif isinstance(node, list):
+            for child in list(ast.iter_child_nodes(node)):
+                self.edges.append([node, child])
+                if child not in self.nodes:
+                    self.nodes.append(child)
+                    self.generic_visit(child)
+
+class HashVisitor(AbstractVisitor):
+    def __init__(self):
+        super().__init__()
+
+    def generic_visit(self, node):
+        nodeEmbedding = self.visitSpecial(node)
+        nodeEmbedding = 1/hash(node) + 1/hash(nodeEmbedding) * 0.005
+        if node not in self.nodes:
+            self.nodes.append(node)
+            self.hashedNodes.append(nodeEmbedding)
+
+        if isinstance(node, ast.AST):
+            for child in list(ast.iter_child_nodes(node)):
+                childEmbedding = self.visitSpecial(child)
+                childEmbedding = 1/hash(child) + 1/hash(childEmbedding) * 0.005
+                self.edges.append([nodeEmbedding, childEmbedding])
+                if child not in self.nodes:
+                    self.nodes.append(child)
+                    self.hashedNodes.append(childEmbedding)
+                    self.generic_visit(child)
+
+        elif isinstance(node, list):
+            for child in list(ast.iter_child_nodes(node)):
+                childEmbedding = self.visitSpecial(child)
+                childEmbedding = 1/hash(child) + 1/hash(childEmbedding) * 0.005
+                self.edges.append([(node, nodeEmbedding), (child, childEmbedding)])
+                if child not in self.nodes:
+                    self.nodes.append(child)
+                    self.hashedNodes.append(childEmbedding)
+                    self.generic_visit(child)

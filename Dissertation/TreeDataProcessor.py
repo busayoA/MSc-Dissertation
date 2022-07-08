@@ -1,6 +1,6 @@
 import random
-import TreeEmbeddingLayer as embeddingLayer
-import TreeParser as pf
+from TreeEmbeddingLayer import TreeEmbeddingLayer
+from TreeParser import TreeParser
 import tensorflow as tf
 from os.path import dirname, join
 
@@ -34,9 +34,10 @@ def saveData(train, test):
     print("\nCollecting training data", end="......")
     x_train, y_train = [], []
     for i in range(len(train)):
-        if i % 5 == 0:
+        if i % 2 == 0:
             print(end=".")
-        embedding = embeddingLayer.TreeEmbeddingLayer(train[i])
+        current = train[i]
+        embedding = TreeEmbeddingLayer(current)
         x_train.append(embedding.vectors)
         y_train.append(embedding.label)
 
@@ -45,7 +46,7 @@ def saveData(train, test):
     for i in range(len(test)):
         if i % 5 == 0:
             print(end=".")
-        embedding = embeddingLayer.TreeEmbeddingLayer(test[i])
+        embedding = TreeEmbeddingLayer(test[i])
         x_test.append(embedding.vectors)
         y_test.append(embedding.label)
 
@@ -57,7 +58,9 @@ def saveHashData(train, test):
     for i in range(len(train)):
         if i % 5 == 0:
             print(end=".")
-        x_train.append(train[i][0])
+        current = train[i]
+        tree = current[0].getTreeEmbeddings(current[0])
+        x_train.append(tree)
         y_train.append(train[i][1])
 
     print("\nCollecting testing data", end="......")
@@ -65,8 +68,11 @@ def saveHashData(train, test):
     for i in range(len(test)):
         if i % 5 == 0:
             print(end=".")
-        x_test.append(test[i][0])
+        current = test[i]
+        tree = current[0].getTreeEmbeddings(current[0])
+        x_test.append(tree)
         y_test.append(test[i][1])
+
     writeToFiles(x_train, y_train, x_test, y_test, True)
 
 def writeToFiles(x_train, y_train, x_test, y_test, hashed):
@@ -123,7 +129,7 @@ def getData(hashed: bool):
 
 # RUN THE DATA PROCESSOR ON THE UNHASHED TREES
 def saveUnhashedFiles():
-    parser = pf.Parser()
+    parser = TreeParser(False)
     mergeTree, mergeLabels = parser.parse(merge)
     quickTree, quickLabels = parser.parse(quick)
 
@@ -133,11 +139,11 @@ def saveUnhashedFiles():
     pairs = attachLabels(x, y)
     split = int(0.8 * len(pairs))
     train, test = pairs[:split], pairs[split:]
-    # saveData(train, test)
+    saveData(train, test)
 
 # RUN THE DATA PROCESSOR ON THE HASHED TREES
 def saveHashedFiles():
-    hashParser = pf.HashParser()
+    hashParser = TreeParser(True)
     mergeHashTree, mergeLabels = hashParser.parse(merge)
     quickHashTree, quickLabels = hashParser.parse(quick)
 
@@ -146,4 +152,24 @@ def saveHashedFiles():
     hashedPairs = attachLabels(x_hash, y_hash)
     split_hash = int(0.8 * len(hashedPairs))
     train_hash, test_hash = hashedPairs[:split_hash], hashedPairs[split_hash:]
-    # saveHashData(train_hash, test_hash)
+    saveHashData(train_hash, test_hash)
+
+def tensorToList(xValues):
+    x = []
+    for i in xValues:
+        x.append(list(i.numpy()))
+    
+    return x
+
+def floatToInt(y):
+    y = list(y)
+    for i in range(len(y)):
+        j = y[i]
+        j = list(j)
+        j = j[0]
+        y[i] = int(j)
+    return y
+
+# saveHashedFiles()
+# print()
+# saveUnhashedFiles()

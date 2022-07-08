@@ -3,12 +3,7 @@ import numpy as np
 from typing import List
 
 class MLP:
-    def __init__(self, x_train: tf.Tensor, 
-    y_train: List, 
-    layers: List[int], 
-    activationFunction: str, 
-    learningRate: float, 
-    epochs: int):
+    def __init__(self, x_train: tf.Tensor, y_train: List, layers: List[int], activationFunction: str, learningRate: float, epochs: int):
         self.x_train = x_train
         self.y_train = y_train
         self.layers = layers

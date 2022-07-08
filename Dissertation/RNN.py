@@ -5,38 +5,22 @@ class RNN():
     def __init__(self):
         pass
 
-    def __init__(self, layerName: str, learningRate: float = None, activationFunction: str = None, 
-    neurons:int = None, dropoutRate: float =  None, hiddenLayerCount: int = None, hiddenLayerUnits: List[int] = None):
+    def __init__(self, layerName: str, x_train: tf.Tensor, y_train: tf.Tensor, x_test: tf.Tensor, y_test: tf.Tensor, activationFunction: str = None, 
+    neurons:int = None, dropoutRate: float =  None):
         self.layerName = layerName.lower()
-        if learningRate is not None:
-            self.learningRate = learningRate
-        
+
+        self.x_train = x_train
+        self.y_train = y_train
+        self.x_test = x_test
+        self.y_test = y_test
         if activationFunction is not None:
-            self.activationFunction = activationFunction
+            self.activationFunction = self.getActivationFunction(activationFunction)
 
         if neurons is not None:
             self.neurons = neurons
 
         if dropoutRate is not None:
             self.dropoutRate = dropoutRate
-
-        if hiddenLayerCount is not None:
-            self.hiddenLayerCount = hiddenLayerCount
-
-        if hiddenLayerUnits is not None:
-            self.hiddenLayerUnits = hiddenLayerUnits
-
-    def chooseModel(self, inputShape: tuple = None, returnSequences:bool = None):
-        if self.layerName == "lstm":
-            return self.LSTMLayer(self.neurons, self.activationFunction, True, inputShape, returnSequences)
-        elif self.layerName == "rnn":
-            return self.RNNLayer(self.neurons, self.activationFunction, True)
-        elif self.layerName == "gru":
-            return self.GRULayer(self.neurons, self.activationFunction, True, inputShape, returnSequences)
-        elif self.layerName == "dropout":
-            return self.DropoutLayer(self.dropoutRate)
-        elif self.layerName == "output" or self.layerName == "dense":
-            return self.DenseLayer(self.neurons, self.activationFunction, True)
 
     def RNNLayer(self, neurons: int, activationFunction: str, useBias: bool):
         activationFunction = self.getActivationFunction(activationFunction)
@@ -74,3 +58,33 @@ class RNN():
         else:
             return None
 
+    def runModel(self, layerType: str, filename: str, neurons: int, epochs: int):
+        print("USING THE RECURRENT NEURAL NETWORK")
+        inputLayer = tf.keras.layers.InputLayer(input_shape=(self.x_train.shape[1], 1))
+        inputShape=(self.x_train.shape[0], )
+
+        dropout = self.DropoutLayer(0.3)
+        output = self.DenseLayer(2, "sigmoid", False)
+    
+        print("USING", layerType.upper(), "LAYERS")
+        model = tf.keras.models.Sequential()
+        model.add(inputLayer)
+        if layerType == "lstm":
+            lstmLayer = self.LSTMLayer(neurons, self.activationFunction, False, inputShape, True)
+            model.add(tf.keras.layers.Bidirectional(lstmLayer))
+            model.add(tf.keras.layers.LSTM(256))
+        elif layerType == "gru":
+            gruLayer = self.GRULayer(neurons, self.activationFunction, False, inputShape, True)
+            model.add(tf.keras.layers.Bidirectional(gruLayer))
+            model.add(tf.keras.layers.GRU(256))
+        elif layerType =="rnn":
+            rnnLayer = self.RNNLayer(neurons, self.activationFunction, False)
+            model.add(tf.keras.layers.Bidirectional(rnnLayer))
+            model.add(tf.keras.layers.SimpleRNN(256))
+
+        model.add(dropout)
+        model.add(output)
+        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        model.summary()
+        model.fit(self.x_train, self.y_train, epochs=epochs, batch_size=20, validation_data=(self.x_test, self.y_test))
+        model.save(filename)

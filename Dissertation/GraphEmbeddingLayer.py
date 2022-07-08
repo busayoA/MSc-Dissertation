@@ -2,7 +2,7 @@ import random
 import tensorflow as tf
 from typing import List
 
-class TreeEmbeddingLayer():
+class GraphEmbeddingLayer():
     def __init__(self, values: list[List, List]):
         self.root = values[0]
         self.nodes =  self.root.preOrderTraversal(self.root)
