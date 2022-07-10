@@ -7,7 +7,7 @@ from Networks.SKLearnClassifiers import SGDClassify, rfClassify, SVMClassify
 import ParsingAndEmbeddingLayers.Graphs.GraphDataProcessor as GDP
 
 # hashed = True  # if you want to test with hashed graphs, set HASHED to True
-hashed = True # else, set to False
+hashed = False # else, set to False
 gdp = GDP.GraphDataProcessor(hashed)
 
 def runMLPonPaddedGraphs():
@@ -199,73 +199,89 @@ def runSKLearnClassifiersOnSegmentedGraphs():
       svmUSumSegAccuracy = SVMClassify(x_train, y_train, x_test, y_test)
       print("SVM CLASSIFIER AND SEGMENTED GRAPHS:", svmUSumSegAccuracy)
 
-# runMLPonPaddedGraphs() # ACCURACY: 60%-TANH, 56%-SOFTMAX, 55%-RELU, 48%-SIGMOID - UNHASHED
-#                         # ACCURACY: 54.46%-TANH, 54.46%-SOFTMAX, 54.46%-RELU, 45.54%-SIGMOID - HASHED
-# runMLPonSegmentedGraphs() # 62.5%-TANH, 50.89%-SOFTMAX, 50%-SIGMOID, 45.27%-RELU - UNHASHED
-#                         # ACCURACY: 54.46%-TANH, 45.54%-SOFTMAX, 54.46%-RELU, 54.46%-SIGMOID - HASHED
+# runMLPonPaddedGraphs()  # Loss: 9.403   TA: 0.5098  VA: 0.6224 - UNHASHED RELU
+#                         # Loss: 0.8256  TA: 0.5625  VA: 0.6327 - UNHASHED TANH
+#                         # Loss: 0.6944  TA: 0.4821  VA: 0.3673 - UNHASHED SOFTMAX
+#                         # Loss: 0.7712  TA: 0.4911  VA: 0.5918 - UNHASHED SIGMOID
 
-# runDenseModelonPaddedGraphs() # 100% Training Accuracy (Indicates Overfitting) 45% Validation accuracy - UNHASHED
-#                                     # % 54.46% Training Accuracy, 46.94% Validation Accuracy - HASHED
-# runDenseModelonSegmentedGraphs() # 75% Training Accuracy, 61.22% Validation accuracy - UNHASHED
-#                                     # % 54.46% Training Accuracy, 46.94% Validation Accuracy - HASHED
+#                         # Loss:    TA:   VA:  - HASHED RELU
+#                         # Loss:   TA:   VA:  - HASHED TANH
+#                         # Loss:   TA:   VA:  - HASHED SOFTMAX
+#                         # Loss:   TA:   VA:  - HASHED SIGMOID
 
-# runGaussianNBConPaddedGraphs() #50.625 - UNHASHED, 47.5% HASHED
-# runGaussianNBConSegmentedGraphs() #54.375 - UNHASHED, 52.5% HASHED
+# runMLPonSegmentedGraphs()# Loss: 2.3858   TA: 0.4848  VA: 0.6265 - UNHASHED RELU
+#                         # Loss: 0.9311  TA: 0.4464  VA: 0.5102  - UNHASHED TANH
+#                         # Loss: 0.6965  TA: 0.5089  VA: 0.4081 - UNHASHED SOFTMAX
+#                         # Loss: 0.7171  TA: 0.5089  VA: 0.4081 - UNHASHED SIGMOID
 
-# runLSTMonPaddedGraphs("relu") #51.79% Training Accuracy, 59.18% Validation Accuracy - UNHASHED
-#                                     # 46.43% Training Accuracy, 53.06% Validation Accuracy - HASHED
-# runLSTMonPaddedGraphs("tanh") #49.11% Training Accuracy, 59.18% Validation Accuracy - UNHASHED
-#                                     # 55.36% Training Accuracy, 42.86% Validation Accuracy - HASHED
-# runLSTMonPaddedGraphs("sigmoid") #49.11% Training Accuracy, 57.14% Validation Accuracy - UNHASHED
-#                                     # 49.11% Training Accuracy, 42.86% Validation Accuracy - HASHED
-# runLSTMonPaddedGraphs("softmax") #49.11% Training Accuracy, 59.18% Validation Accuracy - UNHASHED
-#                                     # 51.79% Training Accuracy, 57.14% Validation Accuracy - HASHED
+#                         # Loss:    TA:   VA:  - HASHED RELU
+#                         # Loss:   TA:   VA:  - HASHED TANH
+#                         # Loss:   TA:   VA:  - HASHED SOFTMAX
+#                         # Loss:   TA:   VA:  - HASHED SIGMOID
 
-# runLSTMonSegmentedGraphs("relu") #55.36.% Training Accuracy, 53.06% Validation Accuracy - UNHASHED
-#                                     # 43.75% Training Accuracy,46.94 % Validation Accuracy - HASHED
-# runLSTMonSegmentedGraphs("tanh") #57.14% Training Accuracy, 46.94% Validation Accuracy - UNHASHED
-#                                     # 47.32% Training Accuracy, 53.06% Validation Accuracy - HASHED
-# runLSTMonSegmentedGraphs("sigmoid") #55.36% Training Accuracy, 48.98% Validation Accuracy - UNHASHED
-#                                     # 41.07% Training Accuracy, 53.06% Validation Accuracy - HASHED
-# runLSTMonSegmentedGraphs("softmax") #57.14% Training Accuracy, 48.98% Validation Accuracy - UNHASHED
-#                                     # 46.43% Training Accuracy, 53.06% Validation Accuracy - HASHED
+# runDenseModelonPaddedGraphs() # Loss: 0.0261, 2.0560  TA: 1.0  VA: 0.4286 - UNHASHED
+#                               # Loss:  TA:   VA: - HASHED
+# runDenseModelonSegmentedGraphs() # Loss:  TA:   VA: - UNHASHED
+#                                  # Loss: 0.5153, 0.8751 TA: 75.89   VA: 0.5715 - HASHED
 
-"""MAKE SURE YOU CHECK WHAT HASHED IS SET TO BEFORE YOU RUN THIS BUSAYO!!!!!!!!!!!!!!!!!!!!!!!!!!!!"""
-runGRUonPaddedGraphs("relu")  #50.89.% Training Accuracy, 55.10% Validation Accuracy - UNHASHED
-                                    # 28.57% Training Accuracy, 20.41% Validation Accuracy - HASHED
-runGRUonPaddedGraphs("tanh") #50.00.% Training Accuracy, 61.22% Validation Accuracy - UNHASHED
-                                    # 48.21% Training Accuracy, 46.94% Validation Accuracy - HASHED
-runGRUonPaddedGraphs("sigmoid") #__.__.% Training Accuracy, __.__% Validation Accuracy - UNHASHED
-                                    # 53.57% Training Accuracy, 44.90% Validation Accuracy - HASHED 
-runGRUonPaddedGraphs("softmax") #__.__.% Training Accuracy, __.__% Validation Accuracy - UNHASHED
-                                    # 33.93% Training Accuracy, 22.45% Validation Accuracy - HASHED
+# runGaussianNBConPaddedGraphs() # Average Accuracy: 51.25%- UNHASHED
+#                                     # Average Accuracy: - HASHED      
+# runGaussianNBConSegmentedGraphs() # Average Accuracy: 51.25% - UNHASHED
+#                                     # Average Accuracy: - HASHED  
 
-# runGRUonSegmentedGraphs("relu") #57.14.% Training Accuracy, 38.78_% Validation Accuracy - UNHASHED
-#                                     # 44.64% Training Accuracy, 53.06% Validation Accuracy - HASHED
-# runGRUonSegmentedGraphs("tanh") #54.46.% Training Accuracy, 48.98% Validation Accuracy - UNHASHED
-#                                     # 51.79% Training Accuracy, 46.94% Validation Accuracy - HASHED
-# runGRUonSegmentedGraphs("sigmoid") #56.25.% Training Accuracy, 42.86% Validation Accuracy - UNHASHED
-#                                     # 49.11% Training Accuracy, 53.06% Validation Accuracy - HASHED
-# runGRUonSegmentedGraphs("softmax") #58.93.% Training Accuracy, 42.86% Validation Accuracy - UNHASHED
-#                                     # 44.64% Training Accuracy, 53.06% Validation Accuracy - HASHED
+runLSTMonPaddedGraphs("relu") # Loss:  TA:   VA: - UNHASHED
+                              #    Loss:  TA:   VA: - HASHED
+runLSTMonPaddedGraphs("tanh") # Loss:  TA:   VA: - UNHASHED
+                              #    Loss:  TA:   VA: - HASHED
+runLSTMonPaddedGraphs("sigmoid") # Loss:  TA:   VA: - UNHASHED
+                              #    Loss:  TA:   VA: - HASHED
+runLSTMonPaddedGraphs("softmax") # Loss:  TA:   VA: - UNHASHED
+                              #    Loss:  TA:   VA: - HASHED
 
-# runSRNNonPaddedGraphs("relu") #__.__.% Training Accuracy, __.__% Validation Accuracy - UNHASHED 
-#                                     # % Training Accuracy, % Validation Accuracy - HASHED
-# runSRNNonPaddedGraphs("tanh") #__.__.% Training Accuracy, __.__% Validation Accuracy - UNHASHED
-#                                     # % Training Accuracy, % Validation Accuracy - HASHED
-# runSRNNonPaddedGraphs("sigmoid") #__.__.% Training Accuracy, __.__% Validation Accuracy - UNHASHED
-#                                     # % Training Accuracy, % Validation Accuracy - HASHED
-# runSRNNonPaddedGraphs("softmax") #__.__.% Training Accuracy, __.__% Validation Accuracy - UNHASHED
-#                                     # % Training Accuracy, % Validation Accuracy - HASHED
+# runLSTMonSegmentedGraphs("relu")# Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runLSTMonSegmentedGraphs("tanh") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runLSTMonSegmentedGraphs("sigmoid") ## Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runLSTMonSegmentedGraphs("softmax") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
 
-# runSRNNonSegmentedGraphs("relu") # 48.21% Training Accuracy, 42.86% Validation Accuracy - UNHASHED
-# #                                     # 52.68% Training Accuracy, 42.86% Validation Accuracy - HASHED
-# runSRNNonSegmentedGraphs("tanh") #50.98.% Training Accuracy, 40.82% Validation Accuracy - UNHASHED
-# #                                     # 42.86% Training Accuracy, 53.06% Validation Accuracy - HASHED
-# runSRNNonSegmentedGraphs("sigmoid") #50.89% Training Accuracy, 44.90% Validation Accuracy - UNHASHED
-# #                                     # 54.46% Training Accuracy, 46.94% Validation Accuracy - HASHED
-# runSRNNonSegmentedGraphs("softmax") #44.64% Training Accuracy, 59.18% Validation Accuracy - UNHASHED
-# #                                     # 41.07% Training Accuracy, 44.9% Validation Accuracy - HASHED
+# runGRUonPaddedGraphs("relu")  # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runGRUonPaddedGraphs("tanh") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runGRUonPaddedGraphs("sigmoid") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runGRUonPaddedGraphs("softmax") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+
+# runGRUonSegmentedGraphs("relu") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runGRUonSegmentedGraphs("tanh") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runGRUonSegmentedGraphs("sigmoid") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runGRUonSegmentedGraphs("softmax") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+
+# runSRNNonPaddedGraphs("relu") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runSRNNonPaddedGraphs("tanh") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runSRNNonPaddedGraphs("sigmoid") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runSRNNonPaddedGraphs("softmax") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+
+# runSRNNonSegmentedGraphs("relu") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runSRNNonSegmentedGraphs("tanh")# Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runSRNNonSegmentedGraphs("sigmoid") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
+# runSRNNonSegmentedGraphs("softmax") # Loss:  TA:   VA: - UNHASHED
+                                 # Loss:  TA:   VA: - HASHED
 
 # runSKLearnClassifiersOnPaddedGraphs() # SGD-48.98, RF-42.86, SVM-46.94 - UNHASHED, 
 #                                           # SGD-46.94, RF-46.94, SVM-46.94 - HASHED

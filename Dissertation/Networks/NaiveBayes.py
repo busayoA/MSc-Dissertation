@@ -159,6 +159,7 @@ class NBClassifier:
         return accuracyScore
 
     def makePrediction(self, classStats, xValue):
+        # Get the gaussian probabilities of the class based on its mean and standard deviation
         classProbabilities = self.getClassGaussianProbability(classStats, xValue)
         label, probability = 10, -1
         classProbs = classProbabilities.items()
@@ -169,6 +170,7 @@ class NBClassifier:
         return label
 
     def runGNBClassifier(self, xTrain, yTrain, xTest):
+        # Get the mean and standard deviation for the training folds
         classStats = self.collateClassStatistics(xTrain, yTrain)
         predictions = []
         for x in xTest:
@@ -178,8 +180,14 @@ class NBClassifier:
         return predictions
 
     def gaussianCrossValidation(self, xValues, yValues):
+
+        # split the data into folds of equal values:
         foldsX, foldsY = self.splitIntoFolds(xValues, yValues)
         accuracyScores = []
+
+        # for each data fold, separate it from the rest of the folds 
+        # use the other folds as training data and use the current fold as testing data
+        # calculate the and return the mean accuracy score when the prediction process is complete.
         for i in range(len(foldsX)):
             currentTrainX, currentY = foldsX[i], foldsY[i]
             allTrain, allY, allTest, allTestY = list(foldsX), list(foldsY), [], []
@@ -198,3 +206,4 @@ class NBClassifier:
             accuracyScore = self.calculateAccuracyScore(allTestY, predicted)
             accuracyScores.append(accuracyScore)
         return mean(accuracyScores)
+

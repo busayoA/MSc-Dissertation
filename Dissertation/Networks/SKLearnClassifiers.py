@@ -22,7 +22,7 @@ def SVMClassify(x_train, y_train, x_test, y_test):
 
 def rfClassify(x_train, y_train, x_test, y_test):
     """A RANDOM FOREST CLASSIFIER"""
-    classifier = Pipeline([('clf', RandomForestClassifier(n_estimators=5))])
+    classifier = Pipeline([('clf', RandomForestClassifier())])
     classifier.fit(x_train, y_train)
     predictions = classifier.predict(x_test)
     accuracyScore = accuracy_score(y_test, predictions)

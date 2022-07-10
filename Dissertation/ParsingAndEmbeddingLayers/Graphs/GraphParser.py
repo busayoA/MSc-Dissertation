@@ -7,12 +7,6 @@ class GraphParser:
     def __init__(self, hashed):
         self.hashed = hashed
 
-        currentDirectory = dirname(__file__)
-        pathSplit = "/Experiments"
-        head = currentDirectory.split(pathSplit)
-        path = head[0]
-        print(path)
-
     def convertToGraph(self, filePath):
         programAST = ''
         with open (filePath, "r") as file:
