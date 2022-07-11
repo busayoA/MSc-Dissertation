@@ -39,8 +39,8 @@ class RNN:
             dropoutRate = 0.3
         return tf.keras.layers.Dropout(dropoutRate)
 
-    def DenseLayer(self, neurons: int, activationFunction: str, useBias: bool):
-        activationFunction = self.getActivationFunction(activationFunction)
+    def DenseLayer(self, neurons: int, useBias: bool):
+        activationFunction = self.activationFunction
         return tf.keras.layers.Dense(neurons, activationFunction, useBias)
 
     def getActivationFunction(self, activationFunction: str):
@@ -58,13 +58,13 @@ class RNN:
         else:
             return None
 
-    def runModel(self, layerType: str, filename: str, neurons: int, epochs: int):
+    def runModel(self, layerType: str, neurons: int, epochs: int, batchSize: int, filename: str = None):
         print("USING THE RECURRENT NEURAL NETWORK")
         inputLayer = tf.keras.layers.InputLayer(input_shape=(self.x_train.shape[1], 1))
         inputShape=(self.x_train.shape[0], )
 
         dropout = self.DropoutLayer(0.3)
-        output = self.DenseLayer(2, "sigmoid", False)
+        output = self.DenseLayer(2, False)
     
         print("USING", layerType.upper(), "LAYERS")
         model = tf.keras.models.Sequential()
@@ -86,5 +86,8 @@ class RNN:
         model.add(output)
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         model.summary()
-        model.fit(self.x_train, self.y_train, epochs=epochs, batch_size=10, validation_data=(self.x_test, self.y_test))
-        model.save(filename)
+        model.fit(self.x_train, self.y_train, epochs=epochs, batch_size=batchSize, validation_data=(self.x_test, self.y_test))
+        if filename is not None:
+            model.save(filename)
+
+            

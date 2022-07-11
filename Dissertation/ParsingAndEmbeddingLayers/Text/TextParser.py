@@ -4,12 +4,17 @@ import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from os.path import dirname, join
 
-current_dir = dirname(__file__)
-merge = "./Data/Merge Sort"
-quick = "./Data/Quick Sort"
+merge = "./Datasets/Merge Sort"
+quick = "./Datasets/Quick Sort"
 
-merge = join(current_dir, merge)
-quick = join(current_dir, quick)
+currentDirectory = dirname(__file__)
+pathSplit = "/ParsingAndEmbeddingLayers"
+head = currentDirectory.split(pathSplit)
+path = head[0]
+# print(path)
+
+merge = join(path, merge)
+quick = join(path, quick)
 
 
 """PARSING THE FILES AS TEXT"""
