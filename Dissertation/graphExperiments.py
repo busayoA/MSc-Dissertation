@@ -6,8 +6,8 @@ from Networks.DenseModel import runDenseModel
 from Networks.SKLearnClassifiers import SGDClassify, rfClassify, SVMClassify
 import ParsingAndEmbeddingLayers.Graphs.GraphDataProcessor as GDP
 
-# hashed = True  # if you want to test with hashed graphs, set HASHED to True
-hashed = False # else, set to False
+hashed = True  # if you want to test with hashed graphs, set HASHED to True
+# hashed = False # else, set to False
 gdp = GDP.GraphDataProcessor(hashed)
 
 def runMLPonPaddedGraphs():
@@ -29,25 +29,25 @@ def runMLPonPaddedGraphs():
       mlp4 = MLP(x_train, y_train, layers, "logsigmoid", lr, epochs)
       metrics4 = mlp4.runFFModel(x_train, y_train, x_test, y_test)
 
-      print("USING THE MULTI-LAYER PERCEPTRON")
+      print("USING THE MULTI-LAYER PERCEPTRON AND PADDED GRAPHS")
       print("USING RELU")
-      print("Average loss:", np.average(metrics1['trainingLoss']), "Average training accuracy:",
-            np.average(metrics1['trainingAccuracy']), "Average validation accuracy:",
+      print("Loss:", np.average(metrics1['trainingLoss']), "Training Accuracy:",
+            np.average(metrics1['trainingAccuracy']), "Validation accuracy:",
             np.average(metrics1['validationAccuracy']), "\n")
 
       print("USING TANH")
-      print("Average loss:", np.average(metrics2['trainingLoss']), "Average training accuracy:",
-            np.average(metrics2['trainingAccuracy']), "Average validation accuracy:",
+      print("Loss:", np.average(metrics2['trainingLoss']), "Training Accuracy:",
+            np.average(metrics2['trainingAccuracy']), "Validation accuracy:",
             np.average(metrics2['validationAccuracy']), "\n")
 
       print("USING SOFTMAX")
-      print("Average loss:", np.average(metrics3['trainingLoss']), "Average training accuracy:",
-            np.average(metrics3['trainingAccuracy']), "Average validation accuracy:",
+      print("Loss:", np.average(metrics3['trainingLoss']), "Training Accuracy:",
+            np.average(metrics3['trainingAccuracy']), "Validation accuracy:",
             np.average(metrics3['validationAccuracy']), "\n")
 
       print("USING SIGMOID")
-      print("Average loss:", np.average(metrics4['trainingLoss']), "Average training accuracy:",
-            np.average(metrics4['trainingAccuracy']), "Average validation accuracy:",
+      print("Loss:", np.average(metrics4['trainingLoss']), "Training Accuracy:",
+            np.average(metrics4['trainingAccuracy']), "Validation accuracy:",
             np.average(metrics4['validationAccuracy']), "\n")
 
 def runMLPonSegmentedGraphs():
@@ -70,36 +70,50 @@ def runMLPonSegmentedGraphs():
       metrics4 = mlp4.runFFModel(x_train, y_train, x_test, y_test)
 
 
-      print("USING THE MULTI-LAYER PERCEPTRON ANF SEGMENTATION")
+      print("USING THE MULTI-LAYER PERCEPTRON AND SEGMENTATION")
       print("USING RELU")
-      print("Average loss:", np.average(metrics1['trainingLoss']), "Average training accuracy:",
-            np.average(metrics1['trainingAccuracy']), "Average validation accuracy:",
+      print("Loss:", np.average(metrics1['trainingLoss']), "Training Accuracy:",
+            np.average(metrics1['trainingAccuracy']), "Validation accuracy:",
             np.average(metrics1['validationAccuracy']), "\n")
 
       print("USING TANH")
-      print("Average loss:", np.average(metrics2['trainingLoss']), "Average training accuracy:",
-            np.average(metrics2['trainingAccuracy']), "Average validation accuracy:",
+      print("Loss:", np.average(metrics2['trainingLoss']), "Training Accuracy:",
+            np.average(metrics2['trainingAccuracy']), "Validation accuracy:",
             np.average(metrics2['validationAccuracy']), "\n")
 
       print("USING SOFTMAX")
-      print("Average loss:", np.average(metrics3['trainingLoss']), "Average training accuracy:",
-            np.average(metrics3['trainingAccuracy']), "Average validation accuracy:",
+      print("Loss:", np.average(metrics3['trainingLoss']), "Training Accuracy:",
+            np.average(metrics3['trainingAccuracy']), "Validation accuracy:",
             np.average(metrics3['validationAccuracy']), "\n")
 
       print("USING SIGMOID")
-      print("Average loss:", np.average(metrics4['trainingLoss']), "Average training accuracy:",
-            np.average(metrics4['trainingAccuracy']), "Average validation accuracy:",
+      print("Loss:", np.average(metrics4['trainingLoss']), "Training Accuracy:",
+            np.average(metrics4['trainingAccuracy']), "Validation accuracy:",
             np.average(metrics4['validationAccuracy']), "\n")
 
 def runDenseModelonPaddedGraphs():
       x_train, y_train, x_test, y_test = gdp.runProcessor1()
 
-      runDenseModel(x_train, y_train, x_test, y_test, "densePaddedHashed.hdf5")
+      print("DENSE PADDED MODEL AND SOFTMAX")
+      runDenseModel(x_train, y_train, x_test, y_test, "softmax", 5, 10, "densePaddedSoftmax.hdf5")
+      print("DENSE PADDED MODEL AND RELU")
+      runDenseModel(x_train, y_train, x_test, y_test, "relu", 5, 10, "densePaddedRelu.hdf5")
+      print("DENSE PADDED MODEL AND TANH")
+      runDenseModel(x_train, y_train, x_test, y_test, "tanh", 5, 10, "densePaddedTanh.hdf5")
+      print("DENSE PADDED MODEL AND SIGMOID")
+      runDenseModel(x_train, y_train, x_test, y_test, "sigmoid", 5, 10, "densePaddedSigmoid.hdf5")
 
 def runDenseModelonSegmentedGraphs():
       x_train, y_train, x_test, y_test = gdp.runProcessor3()
 
-      runDenseModel(x_train, y_train, x_test, y_test, "denseSegmentedHashed.hdf5")
+      print("DENSE SEGMENTED MODEL AND SOFTMAX")
+      runDenseModel(x_train, y_train, x_test, y_test, "softmax", 5, 10, "denseSegmented.hdf5")
+      print("DENSE SEGMENTED MODEL AND RELU")
+      runDenseModel(x_train, y_train, x_test, y_test, "relu", 5, 10, "denseSegmented.hdf5")
+      print("DENSE SEGMENTED MODEL AND TANH")
+      runDenseModel(x_train, y_train, x_test, y_test, "tanh", 5, 10, "denseSegmented.hdf5")
+      print("DENSE SEGMENTED MODEL AND SIGMOID")
+      runDenseModel(x_train, y_train, x_test, y_test, "sigmoid", 5, 10, "denseSegmented.hdf5")
 
 def runGaussianNBConPaddedGraphs():
       x_train, y_train, x_test, y_test = gdp.runProcessor2()
@@ -134,44 +148,50 @@ def runGaussianNBConSegmentedGraphs():
 def runLSTMonPaddedGraphs(activationFunction: str):
       """RUNNING LSTM ON PADDED GRAPHS"""
       x_train, y_train, x_test, y_test = gdp.runProcessor1()
+      print(activationFunction.upper())
       graphLSTM = "lstm"
       lstmModel = RNN(graphLSTM, x_train, y_train, x_test, y_test, activationFunction)
-      lstmModel.runModel(graphLSTM, "graphLSTMPadded.hdf5", 256, 30)
+      lstmModel.runModel(graphLSTM, 256, 10, 5, "graphLSTMPadded.hdf5")
 
 def runLSTMonSegmentedGraphs(activationFunction: str):
       """RUNNING LSTM ON PADDED GRAPHS"""
       x_train, y_train, x_test, y_test = gdp.runProcessor3()
+      print(activationFunction.upper())
       graphLSTM = "lstm"
       lstmModel = RNN(graphLSTM, x_train, y_train, x_test, y_test, activationFunction)
-      lstmModel.runModel(graphLSTM, "graphLSTMSegmented.hdf5", 256, 30)
+      lstmModel.runModel(graphLSTM, 256, 10, 5, "graphLSTMSegmented.hdf5")
 
 def runGRUonPaddedGraphs(activationFunction: str):
       """RUNNING GRU ON PADDED GRAPHS"""
       x_train, y_train, x_test, y_test = gdp.runProcessor1()
+      print(activationFunction.upper())
       gru = "gru"
       gruModel = RNN(gru, x_train, y_train, x_test, y_test, activationFunction)
-      gruModel.runModel(gru, "graphGRUPadded.hdf5", 256, 30)
+      gruModel.runModel(gru, 256, 10, 5, "graphGRUPadded.hdf5")
 
 def runGRUonSegmentedGraphs(activationFunction: str):
       """RUNNING GRU ON PADDED GRAPHS"""
       x_train, y_train, x_test, y_test = gdp.runProcessor3()
+      print(activationFunction.upper())
       gru = "gru"
       gruModel = RNN(gru, x_train, y_train, x_test, y_test, activationFunction)
-      gruModel.runModel(gru, "graphGRUSegmented.hdf5", 256, 30)
+      gruModel.runModel(gru, 256, 10, 5, "graphGRUSegmented.hdf5")
 
 def runSRNNonPaddedGraphs(activationFunction: str):
       """RUNNING GRU ON PADDED GRAPHS"""
       x_train, y_train, x_test, y_test = gdp.runProcessor1()
+      print(activationFunction.upper())
       srnn = "rnn"
       srnnModel = RNN(srnn, x_train, y_train, x_test, y_test, activationFunction)
-      srnnModel.runModel(srnn, "graphSRNNPadded.hdf5", 256, 30)
+      srnnModel.runModel(srnn, 256, 10, 5, "graphSRNNPadded.hdf5")
 
 def runSRNNonSegmentedGraphs(activationFunction: str):
       """RUNNING GRU ON PADDED GRAPHS"""
       x_train, y_train, x_test, y_test = gdp.runProcessor3()
+      print(activationFunction.upper())
       srnn = "rnn"
       srnnModel = RNN(srnn, x_train, y_train, x_test, y_test, activationFunction)
-      srnnModel.runModel(srnn, "graphSRNNSegmented.hdf5", 256, 30)
+      srnnModel.runModel(srnn, 256, 10, 5, "graphSRNNSegmented.hdf5")
 
 def runSKLearnClassifiersOnPaddedGraphs():
       """RUNNING ON PADDED GRAPHS"""
@@ -199,92 +219,45 @@ def runSKLearnClassifiersOnSegmentedGraphs():
       svmUSumSegAccuracy = SVMClassify(x_train, y_train, x_test, y_test)
       print("SVM CLASSIFIER AND SEGMENTED GRAPHS:", svmUSumSegAccuracy)
 
-# runMLPonPaddedGraphs()  # Loss: 9.403   TA: 0.5098  VA: 0.6224 - UNHASHED RELU
-#                         # Loss: 0.8256  TA: 0.5625  VA: 0.6327 - UNHASHED TANH
-#                         # Loss: 0.6944  TA: 0.4821  VA: 0.3673 - UNHASHED SOFTMAX
-#                         # Loss: 0.7712  TA: 0.4911  VA: 0.5918 - UNHASHED SIGMOID
+runMLPonPaddedGraphs() 
+runMLPonSegmentedGraphs()
 
-#                         # Loss:    TA:   VA:  - HASHED RELU
-#                         # Loss:   TA:   VA:  - HASHED TANH
-#                         # Loss:   TA:   VA:  - HASHED SOFTMAX
-#                         # Loss:   TA:   VA:  - HASHED SIGMOID
+runDenseModelonPaddedGraphs() 
+runDenseModelonSegmentedGraphs()
 
-# runMLPonSegmentedGraphs()# Loss: 2.3858   TA: 0.4848  VA: 0.6265 - UNHASHED RELU
-#                         # Loss: 0.9311  TA: 0.4464  VA: 0.5102  - UNHASHED TANH
-#                         # Loss: 0.6965  TA: 0.5089  VA: 0.4081 - UNHASHED SOFTMAX
-#                         # Loss: 0.7171  TA: 0.5089  VA: 0.4081 - UNHASHED SIGMOID
+runGaussianNBConPaddedGraphs()      
+runGaussianNBConSegmentedGraphs() 
 
-#                         # Loss:    TA:   VA:  - HASHED RELU
-#                         # Loss:   TA:   VA:  - HASHED TANH
-#                         # Loss:   TA:   VA:  - HASHED SOFTMAX
-#                         # Loss:   TA:   VA:  - HASHED SIGMOID
+runLSTMonPaddedGraphs("relu") 
+runLSTMonPaddedGraphs("tanh") 
+runLSTMonPaddedGraphs("sigmoid")
+runLSTMonPaddedGraphs("softmax") 
 
-# runDenseModelonPaddedGraphs() # Loss: 0.0261, 2.0560  TA: 1.0  VA: 0.4286 - UNHASHED
-#                               # Loss:  TA:   VA: - HASHED
-# runDenseModelonSegmentedGraphs() # Loss:  TA:   VA: - UNHASHED
-#                                  # Loss: 0.5153, 0.8751 TA: 75.89   VA: 0.5715 - HASHED
+runLSTMonSegmentedGraphs("relu") 
+runLSTMonSegmentedGraphs("tanh")
+runLSTMonSegmentedGraphs("sigmoid")
+runLSTMonSegmentedGraphs("softmax")
 
-# runGaussianNBConPaddedGraphs() # Average Accuracy: 51.25%- UNHASHED
-#                                     # Average Accuracy: - HASHED      
-# runGaussianNBConSegmentedGraphs() # Average Accuracy: 51.25% - UNHASHED
-#                                     # Average Accuracy: - HASHED  
+runGRUonPaddedGraphs("relu")  
+runGRUonPaddedGraphs("tanh")
+runGRUonPaddedGraphs("sigmoid")
+runGRUonPaddedGraphs("softmax") 
 
-runLSTMonPaddedGraphs("relu") # Loss:  TA:   VA: - UNHASHED
-                              #    Loss:  TA:   VA: - HASHED
-runLSTMonPaddedGraphs("tanh") # Loss:  TA:   VA: - UNHASHED
-                              #    Loss:  TA:   VA: - HASHED
-runLSTMonPaddedGraphs("sigmoid") # Loss:  TA:   VA: - UNHASHED
-                              #    Loss:  TA:   VA: - HASHED
-runLSTMonPaddedGraphs("softmax") # Loss:  TA:   VA: - UNHASHED
-                              #    Loss:  TA:   VA: - HASHED
+runGRUonSegmentedGraphs("relu") 
+runGRUonSegmentedGraphs("tanh") 
+runGRUonSegmentedGraphs("sigmoid") 
+runGRUonSegmentedGraphs("softmax") 
 
-# runLSTMonSegmentedGraphs("relu")# Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runLSTMonSegmentedGraphs("tanh") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runLSTMonSegmentedGraphs("sigmoid") ## Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runLSTMonSegmentedGraphs("softmax") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
+runSRNNonPaddedGraphs("relu") 
+runSRNNonPaddedGraphs("tanh")
+runSRNNonPaddedGraphs("sigmoid") 
+runSRNNonPaddedGraphs("softmax") 
 
-# runGRUonPaddedGraphs("relu")  # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runGRUonPaddedGraphs("tanh") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runGRUonPaddedGraphs("sigmoid") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runGRUonPaddedGraphs("softmax") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
+runSRNNonSegmentedGraphs("relu") 
+runSRNNonSegmentedGraphs("tanh")
+runSRNNonSegmentedGraphs("sigmoid") 
+runSRNNonSegmentedGraphs("softmax") 
 
-# runGRUonSegmentedGraphs("relu") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runGRUonSegmentedGraphs("tanh") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runGRUonSegmentedGraphs("sigmoid") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runGRUonSegmentedGraphs("softmax") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-
-# runSRNNonPaddedGraphs("relu") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runSRNNonPaddedGraphs("tanh") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runSRNNonPaddedGraphs("sigmoid") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runSRNNonPaddedGraphs("softmax") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-
-# runSRNNonSegmentedGraphs("relu") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runSRNNonSegmentedGraphs("tanh")# Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runSRNNonSegmentedGraphs("sigmoid") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-# runSRNNonSegmentedGraphs("softmax") # Loss:  TA:   VA: - UNHASHED
-                                 # Loss:  TA:   VA: - HASHED
-
-# runSKLearnClassifiersOnPaddedGraphs() # SGD-48.98, RF-42.86, SVM-46.94 - UNHASHED, 
-#                                           # SGD-46.94, RF-46.94, SVM-46.94 - HASHED
-# runSKLearnClassifiersOnSegmentedGraphs() # SGD-53.06, RF-53.06, SVM-59.18 - UNHASHED
-#                                           # SGD-46.94, RF-46.94, SVM-46.94 - HASHED
+runSKLearnClassifiersOnPaddedGraphs() 
+runSKLearnClassifiersOnSegmentedGraphs()
 

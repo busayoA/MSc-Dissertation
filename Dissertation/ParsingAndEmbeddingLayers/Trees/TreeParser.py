@@ -1,6 +1,6 @@
 import os, ast
-from TreeNode import TreeNode
-from Visitor import Visitor, HashVisitor
+from ParsingAndEmbeddingLayers.Trees.TreeNode import TreeNode
+from ParsingAndEmbeddingLayers.Visitor import Visitor, HashVisitor
 
 class TreeParser():
     def __init__(self, hashed: bool):

@@ -1,6 +1,6 @@
 import tensorflow as tf
-import TreeDataProcessor as tdp
-from TreeSegmentationLayer import TreeSegmentationLayer
+from ParsingAndEmbeddingLayers.Trees import TreeDataProcessor as tdp
+from ParsingAndEmbeddingLayers.Trees.TreeSegmentationLayer import TreeSegmentationLayer
 
 segmentCount = 40
 segmentationLayer = TreeSegmentationLayer()

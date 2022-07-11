@@ -50,7 +50,7 @@ class RNN:
             return tf.nn.relu
         elif activationFunction == 'tanh':
             return tf.tanh
-        elif activationFunction == 'logsigmoid':
+        elif activationFunction == 'sigmoid':
             def logSigmoid(x):
                 x = 1.0/(1.0 + tf.math.exp(-x)) 
                 return x
@@ -70,24 +70,21 @@ class RNN:
         model = tf.keras.models.Sequential()
         model.add(inputLayer)
         if layerType == "lstm":
-            lstmLayer = self.LSTMLayer(neurons, self.activationFunction, False, inputShape, True)
+            lstmLayer = self.LSTMLayer(neurons, self.activationFunction, True, inputShape, True)
             model.add(tf.keras.layers.Bidirectional(lstmLayer))
             model.add(tf.keras.layers.LSTM(256))
         elif layerType == "gru":
             gruLayer = self.GRULayer(neurons, self.activationFunction, False, inputShape, True)
             model.add(tf.keras.layers.Bidirectional(gruLayer))
-            model.add(tf.keras.layers.GRU(256))
+            model.add(tf.keras.layers.GRU(10))
         elif layerType =="rnn":
             rnnLayer = self.RNNLayer(neurons, self.activationFunction, False, inputShape, True)
             model.add(tf.keras.layers.Bidirectional(rnnLayer))
             model.add(tf.keras.layers.SimpleRNN(256))
-
-        model.add(dropout)
+            
         model.add(output)
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         model.summary()
         model.fit(self.x_train, self.y_train, epochs=epochs, batch_size=batchSize, validation_data=(self.x_test, self.y_test))
         if filename is not None:
             model.save(filename)
-
-            

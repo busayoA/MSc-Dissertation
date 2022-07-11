@@ -1,6 +1,6 @@
 import random
-from ParsingAndEmbeddingLayers.TreeEmbeddingLayer import TreeEmbeddingLayer
-from ParsingAndEmbeddingLayers.TreeParser import TreeParser
+from ParsingAndEmbeddingLayers.Trees.TreeEmbeddingLayer import TreeEmbeddingLayer
+from ParsingAndEmbeddingLayers.Trees.TreeParser import TreeParser
 from os.path import dirname, join
 
 current_dir = dirname(__file__)

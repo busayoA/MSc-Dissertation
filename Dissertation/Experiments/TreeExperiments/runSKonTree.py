@@ -16,16 +16,5 @@ x_test_sum, x_test_mean, x_test_max, x_test_min, x_test_prod, y_test = seg.getSo
 
 
 
-y_train = tdp.floatToInt(y_train)
-y_test = tdp.floatToInt(y_test)
-
-sgdUSumAccuracy = SGDClassify(x_train_usum, y_train, x_test_usum, y_test)
-print("SGD CLASSIFIER AND UNSORTED SEGEMENT SUM:", sgdUSumAccuracy)
-
-rfUSumAccuracy = rfClassify(x_train_usum, y_train, x_test_usum, y_test)
-print("RANDOM FOREST CLASSIFIER AND UNSORTED SEGEMENT SUM:", rfUSumAccuracy)
-
-svmUSumAccuracy = SVMClassify(x_train_usum, y_train, x_test_usum, y_test)
-print("SVM CLASSIFIER AND UNSORTED SEGEMENT SUM:", svmUSumAccuracy)
 
 

@@ -36,7 +36,7 @@ class MLP:
             return tf.nn.relu
         elif activationFunction == 'tanh':
             return tf.tanh
-        elif activationFunction == 'logsigmoid':
+        elif activationFunction == 'sigmoid':
             def logSigmoid(x):
                 x = 1.0/(1.0 + tf.math.exp(-x)) 
                 return x

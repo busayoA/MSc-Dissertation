@@ -12,9 +12,7 @@ x_train_sum, x_train_mean, x_train_max, x_train_min, x_train_prod, y_train = seg
 x_test_sum, x_test_mean, x_test_max, x_test_min, x_test_prod, y_test = seg.getSortedSegmentTestData(hashed)
 
 
-lstm = "lstm"
-gru = "gru"
-simpleRNN = "rnn"
+
 
 rnnUSum = RNN("lstm", x_train_usum, y_train, x_test_usum, y_test, "relu")
 
