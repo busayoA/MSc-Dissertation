@@ -26,7 +26,7 @@ def runMLPonPaddedGraphs():
       mlp3 = MLP(x_train, y_train, layers, "softmax", lr, epochs)
       metrics3 = mlp3.runFFModel(x_train, y_train, x_test, y_test)
 
-      mlp4 = MLP(x_train, y_train, layers, "logsigmoid", lr, epochs)
+      mlp4 = MLP(x_train, y_train, layers, "sigmoid", lr, epochs)
       metrics4 = mlp4.runFFModel(x_train, y_train, x_test, y_test)
 
       print("USING THE MULTI-LAYER PERCEPTRON AND PADDED GRAPHS")
@@ -66,7 +66,7 @@ def runMLPonSegmentedGraphs():
       mlp3 = MLP(x_train, y_train, layers, "softmax", lr, epochs)
       metrics3 = mlp3.runFFModel(x_train, y_train, x_test, y_test)
 
-      mlp4 = MLP(x_train, y_train, layers, "logsigmoid", lr, epochs)
+      mlp4 = MLP(x_train, y_train, layers, "sigmoid", lr, epochs)
       metrics4 = mlp4.runFFModel(x_train, y_train, x_test, y_test)
 
 
