@@ -38,7 +38,6 @@ def runUnsortedMLPModel(activationFunction: str):
 
 def runLSTM(activationFunction: str):
     model = RNN("lstm", x_train_umean, y_train, x_test_umean, y_test, activationFunction)
-    # model.runModel(lstm, 64, 10, 64)
     model.runModel(lstm, 12, 10, 70)
 
 def runGRU(activationFunction: str):

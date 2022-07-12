@@ -56,7 +56,7 @@ print()
 
 # USING LOGSIGMOID ACTIVATION
 print("UNSORTED SEGMENT SUM AND LOGSIGMOID")
-model1c = MLP(x_train_usum, y_train, layers, "logsigmoid", lr, epochs)
+model1c = MLP(x_train_usum, y_train, layers, "sigmoid", lr, epochs)
 print("UNSORTED SEGMENT MEAN AND LOGSIGMOID")
 model1c.runFFModel(x_train_umean, y_train, x_test_umean, y_test)
 print("UNSORTED SEGMENT MAX AND LOGSIGMOID")
@@ -116,7 +116,7 @@ print()
 
 # USING LOGSIGMOID ACTIVATION
 print("SORTED SEGMENT SUM AND LOGSIGMOID")
-model2c = MLP(x_train_usum, y_train, layers, "logsigmoid", lr, epochs)
+model2c = MLP(x_train_usum, y_train, layers, "sigmoid", lr, epochs)
 model2c.runFFModel(x_train_sum, y_train, x_test_sum, y_test)
 print("SORTED SEGMENT MEAN AND LOGSIGMOID")
 model2c.runFFModel(x_train_mean, y_train, x_test_mean, y_test)
