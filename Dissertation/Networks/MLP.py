@@ -5,6 +5,7 @@ from typing import List
 class MLP:
     def __init__(self, x_train: tf.Tensor, y_train: List, layers: List[int],
                  activationFunction: str, learningRate: float, epochs: int):
+        
         self.x_train = x_train
         self.y_train = y_train
         self.layers = layers
@@ -102,9 +103,9 @@ class MLP:
             if index >= len(y_train):
                 index = 0
 
-            # FIRST FORWARD PASS
+            # First forward pass
             loss = self.backPropagate(x_train, y_train)
-            # SECOND FORWARD PASS/RECURRENT LOOP
+            # Second forward pass/Recurrent Loop with the updated weights
             newOutputs = self.FFLayer(x_train)
             pred = tf.argmax(tf.nn.softmax(newOutputs), axis = 1)
             predictions.append(pred)
