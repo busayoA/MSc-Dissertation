@@ -7,23 +7,34 @@ from os.path import dirname, join
 merge = "./Datasets/Merge Sort"
 quick = "./Datasets/Quick Sort"
 
-currentDirectory = dirname(__file__)
+currentDirectory = dirname(__file__) #the current working directory on the device
 pathSplit = "/ParsingAndEmbeddingLayers"
-head = currentDirectory.split(pathSplit)
-path = head[0]
+head = currentDirectory.split(pathSplit) #split the path into two separate parts
+path = head[0] 
 # print(path)
 
-merge = join(path, merge)
+merge = join(path, merge) #join the directory path to the absolute path
 quick = join(path, quick)
 
-
-"""PARSING THE FILES AS TEXT"""
 class TextParser:
     def readTextFile(self, filePath):
+        """
+        Read the contents of a file
+        filePath - THe file to be read
+
+        Returns
+        f.read() - The contents of the file in 'filePath'
+        """
         with open(filePath, 'r') as f:
             return f.read()
 
     def assignTextLabels(self, filePath, fileList, labelList):
+        """
+        Assign class labels to each file based on the sorting algorithm it implements
+        filePath - The path of the file to be read
+        fileList - The list to save the read files into
+        labelList - The list to save the class labels into
+        """
         os.chdir(filePath)
         for file in os.listdir():
             # Check whether file is in text format or not
@@ -37,6 +48,15 @@ class TextParser:
                     labelList.append(1)
 
     def getTextData(self):
+        """
+        Call the assignTextLabels method and splut the data into training and testing data
+
+        Returns
+        x_train - The training data
+        y_train - The training data labels
+        x_test - The testing data
+        y_test - The testing data labels
+        """
         mergeList, mergeLabels, quickList, quickLabels  = [], [], [], [] #the training and testing data
         self.assignTextLabels(merge, mergeList, mergeLabels)
         self.assignTextLabels(quick, quickList, quickLabels)
@@ -49,8 +69,18 @@ class TextParser:
         return x_train, y_train, x_test, y_test
 
     def getVectorizedTextData(self):
+        """
+        Run vectorization on the training and testing data
+
+        Returns
+        x_train - The vectorized form of the training data
+        y_train - The training data labels
+        x_test - The vectorized form of the testing data
+        y_test - The testing data labels        
+        """
         x_train, y_train, x_test, y_test = self.getTextData()
 
+        # use the Scikit Learn vectorizer to fit the data on the training set
         vectorizer = CountVectorizer(tokenizer=lambda doc:doc, min_df=2)
         vectorizer.fit(x_train)
         x_train = vectorizer.transform(x_train)
