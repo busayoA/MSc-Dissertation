@@ -119,13 +119,16 @@ class GraphParser:
         matrices - THe matrix representations of the graphs in x_graphs
         labels - The class labels
         """
-        current_dir = dirname(__file__)
+        merge = "./Datasets/Merge Sort"
+        quick = "./Datasets/Quick Sort"
 
-        merge = "./Data/Merge Sort"
-        quick = "./Data/Quick Sort"
+        currentDirectory = dirname(__file__) #the current working directory on the device
+        pathSplit = "/ParsingAndEmbeddingLayers"
+        head = currentDirectory.split(pathSplit) #split the path into two separate parts
+        path = head[0] 
 
-        merge = join(current_dir, merge)
-        quick = join(current_dir, quick)
+        merge = join(path, merge) #join the directory path to the absolute path
+        quick = join(path, quick)
 
         x_graph, y  = self.assignLabelsToFiles(merge, quick)
 

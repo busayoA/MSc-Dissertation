@@ -33,29 +33,6 @@ treeBasedValidationMean = textBasedValidationMean/20.0
 print("Avergae TA from Text-Based Deep Learning Models:", treeBasedTrainingMean)
 print("Avergae VA from Text-Based Deep Learning Models:", treeBasedValidationMean)
 
-# MLPwithReLu
-# MLPwithTanh
-# MLPwithSoftMax
-# MLPwithSigmoid
-# LSTMwithReLu
-# LSTMwithTanh
-# LSTMwithSoftMax
-# LSTMwithSigmoid
-# GRUwithReLu
-# GRUwithTanh
-# GRUwithSoftMax
-# GRUwithSigmoid
-# SRNNwithReLu
-# SRNNwithTanh
-# SRNNwithSoftMax
-# SRNNwithSigmoid
-# DensewithReLu
-# DensewithTanh
-# DensewithSoftMax
-# DensewithSigmoid
-
-
-
 xAxisLabels = ["Training Accuracy", "Validation Accuracy"]
 
 fig, plot = plt.subplots(1)

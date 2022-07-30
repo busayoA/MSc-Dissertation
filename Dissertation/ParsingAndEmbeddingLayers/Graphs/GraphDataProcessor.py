@@ -434,6 +434,8 @@ class GraphDataProcessor:
         y_test - The testing data labels that have been read
         """
 
+        self.runHashLayer()
+        self.runEmbeddingLayer()
         xTrain, yTrain, xTest, yTest = self.getFileNames()
         
         x_train, y_train, x_test, y_test = [], [], [], []

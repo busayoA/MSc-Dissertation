@@ -4,11 +4,16 @@ from ParsingAndEmbeddingLayers.Trees.TreeEmbeddingLayer import TreeEmbeddingLaye
 from ParsingAndEmbeddingLayers.Trees.TreeParser import TreeParser
 from os.path import dirname, join
 
-current_dir = dirname(__file__) #the path to the current working directory
+merge = "./Datasets/Merge Sort"
+quick = "./Datasets/Quick Sort"
 
-#find the path of the merge and quick sort files
-merge = join(current_dir, "./Data/Merge Sort")
-quick = join(current_dir, "./Data/Quick Sort")
+currentDirectory = dirname(__file__) #the current working directory on the device
+pathSplit = "/ParsingAndEmbeddingLayers"
+head = currentDirectory.split(pathSplit) #split the path into two separate parts
+path = head[0] 
+
+merge = join(path, merge) #join the directory path to the absolute path
+quick = join(path, quick)
 
 def attachLabels(x, y):
     """
@@ -186,6 +191,7 @@ def readYFiles(filePath):
 def getData(hashed: bool):
     """
     This method is called by external classes when they want to access the contents of the saved files
+    It is also called by external methods when running the final experiments
 
     hashed: bool - Whether or not hashed is true
 
@@ -195,6 +201,10 @@ def getData(hashed: bool):
     x_test - The formatted contents of the testing data file
     y_test - The formatted contents of the testing data labels file
     """
+    saveHashedFiles()
+    print()
+    saveUnhashedFiles()
+
     xTrain, yTrain, xTest, yTest = getFileNames(hashed)
     
     x_train, y_train, x_test, y_test = [], [], [], []
@@ -264,6 +274,3 @@ def floatToInt(y):
         y[i] = int(j)
     return y
 
-# saveHashedFiles()
-# print()
-# saveUnhashedFiles()

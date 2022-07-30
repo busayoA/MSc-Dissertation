@@ -26,7 +26,11 @@ epochs = 10
 lr = 0.001
 
 def runUnsortedMLPModel(activationFunction: str):
-    # USING RELU ACTIVATION
+    """
+    Run the MLP on the tree data
+
+    activationFunction: str - The activation function to apply
+    """
     print("RUNNING RNN MODELS USING UNSORTED SEGMENTATION")
     model = MLP(x_train_umean, y_train, layers, activationFunction, lr, epochs)
     metrics = model.runFFModel(x_train_umean, y_train, x_test_umean, y_test)
@@ -37,18 +41,36 @@ def runUnsortedMLPModel(activationFunction: str):
         np.average(metrics['validationAccuracy']), "\n")
 
 def runLSTM(activationFunction: str):
+    """
+    Run the LSTM on the tree data
+
+    activationFunction: str - The activation function to apply
+    """
     model = RNN("lstm", x_train_umean, y_train, x_test_umean, y_test, activationFunction)
     model.runModel(lstm, 12, 10, 70)
 
 def runGRU(activationFunction: str):
+    """
+    Run the GRU on the tree data
+
+    activationFunction: str - The activation function to apply
+    """
     model = RNN("gru", x_train_umean, y_train, x_test_umean, y_test, activationFunction)
     model.runModel(gru, 64, 20, 64)
 
 def runSRNN(activationFunction: str):
+    """
+    Run the Simple RNN on the tree data
+
+    activationFunction: str - The activation function to apply
+    """
     model = RNN("rnn", x_train_umean, y_train, x_test_umean, y_test, activationFunction)
     model.runModel(simpleRNN, 64, 10, 64)
 
 def runUnsortedDenseModel():
+    """
+    Run the Densely connnected model on the tree data using all 4 activation functions
+    """
     print("DENSE UNSORTED MODEL AND SOFTMAX")
     runDenseModel(x_train_umean, y_train, x_test_umean, y_test, "softmax", 5, 10, "denseSegmented.hdf5")
     print("DENSE UNSORTED MODEL AND RELU")
@@ -59,6 +81,10 @@ def runUnsortedDenseModel():
     runDenseModel(x_train_umean, y_train, x_test_umean, y_test, "sigmoid", 5, 10, "denseSegmented.hdf5")
 
 def runGaussianNBCUnsorted():
+    """
+    Run the Gaussian Naïve Bayes CLassifier on the tree data
+    """
+    # convert the training and testing data and their labels into lists from tensors
     x_train = tdp.tensorToList(x_train_umean)
     x_test = tdp.tensorToList(x_test_umean)
 
@@ -80,6 +106,9 @@ def runGaussianNBCUnsorted():
     print("Gaussian NB Classifier Accuracy:", nbc.gaussianCrossValidation(x, y))
 
 def runSKLearnClassifiersUnsorted():
+    """
+    Run the SVM, SGD and RF classifiers on the tree data
+    """
     yTrain = tdp.floatToInt(y_train)
     yTest = tdp.floatToInt(y_test)
 
@@ -92,6 +121,7 @@ def runSKLearnClassifiersUnsorted():
     svmUSumAccuracy = SVMClassify(x_train_umean, yTrain, x_test_umean, yTest)
     print("SVM CLASSIFIER AND UNSORTED:", svmUSumAccuracy)
 
+# EXPERIMENTS AND RESULTS
 runUnsortedMLPModel("relu")
 runUnsortedMLPModel("tanh")
 runUnsortedMLPModel("softmax")

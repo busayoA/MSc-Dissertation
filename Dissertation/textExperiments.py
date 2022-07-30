@@ -13,6 +13,9 @@ gru = "gru"
 simpleRNN = "rnn"
 
 def runMLPModels():
+    """
+    Run the Multilayer Perceptron Models on text
+    """
     layers = [len(x_train[0]), 128, 128, 2]
     epochs = 10
     lr = 0.001
@@ -50,47 +53,85 @@ def runMLPModels():
     np.average(metrics4['validationAccuracy']), "\n") 
 
 def runReluRNNs():
+    """
+    Run the RNN Models using ReLu Activation 
+    """
     reluModel = RNN("lstm", x_train, y_train, x_test, y_test, "relu")
 
+    print("LSTM WITH RELU")
     reluModel.runModel(lstm, 256, 10, 10)
+
+    print("GRU WITH RELU")
     reluModel.runModel(gru, 256, 10, 10)
+
+    print("SRNN WITH RELU")
     reluModel.runModel(simpleRNN, 256, 10, 10)
 
 def runSoftmaxRNNs():
+    """
+    Run the RNN Models using SoftMax Activation 
+    """
     softmaxModel = RNN("lstm", x_train, y_train, x_test, y_test, "softmax")
 
+    print("LSTM WITH SOFTMAX")
     softmaxModel.runModel(lstm, 256, 10, 10)
+
+    print("GRY WITH SOFTMAX")
     softmaxModel.runModel(gru, 256, 10, 10)
+
+    print("SRNN WITH SOFTMAX")
     softmaxModel.runModel(simpleRNN, 256, 10, 10)
 
 def runTanhRNNs():
+    """
+    Run the RNN Models using Tanh Activation 
+    """
     tanhModel = RNN("lstm", x_train, y_train, x_test, y_test, "tanh")
 
+    print("LSTM WITH TANH")
     tanhModel.runModel(lstm, 256, 10, 10)
+
+    print("GRU WITH TANH")
     tanhModel.runModel(gru, 256, 10, 10)
+
+    print("SRNN WITH TANH")
     tanhModel.runModel(simpleRNN, 256, 10, 10)
 
 def runSigmoidRNNs():
+    """
+    Run the RNN Models using Sigmoid Activation 
+    """
     sigmoidModel = RNN("lstm", x_train, y_train, x_test, y_test, "sigmoid")
 
+    print("LSTM WITH SIGMOID")
     sigmoidModel.runModel(lstm, 256, 10, 10) 
+
+    print("GRU WITH SIGMOID")
     sigmoidModel.runModel(gru, 256, 10, 10)
+
+    print("SRNN WITH SIGMOID")
     sigmoidModel.runModel(simpleRNN, 256, 10, 10)
 
 def runDenseTextModels():
-    print("With RELU")
+    """
+    Run the densely connected models with the four different activation functiond
+    """
+    print("DENSE WITH RELU")
     runDenseModel(x_train, y_train, x_test, y_test, "relu", 20, 10)
 
-    print("With SOFTMAX")    
+    print("DENSE WITH  SOFTMAX")    
     runDenseModel(x_train, y_train, x_test, y_test, "softmax", 20, 10)
 
-    print("With TANH")    
+    print("DENSE WITH  TANH")    
     runDenseModel(x_train, y_train, x_test, y_test, "tanh", 20, 10)
 
-    print("With SIGMOID")    
+    print("DENSE WITH  SIGMOID")    
     runDenseModel(x_train, y_train, x_test, y_test, "sigmoid", 20, 10)
    
 def runGaussianNBC():
+    """
+    Run the Gaussian Naïve Bayes classifier on the text-based inputs
+    """
     # convert the tensors to simple Python lists
     x, y = [], []
     for i in x_train:
@@ -98,6 +139,7 @@ def runGaussianNBC():
     for i in x_test:
         x.append(list(i.numpy()))
     
+    # convert the y tensors into simple Python lists
     for i in y_train:
         i = list(i)
         label = i.index(1.0)
@@ -106,10 +148,15 @@ def runGaussianNBC():
         i = list(i)
         label = i.index(1.0)
         y.append(int(label))
+
+    # Run the classifier on the converted lists
     nbc = NBClassifier(x, y)
     print("Gaussian NB Classifier Accuracy:", nbc.gaussianCrossValidation(x, y)) #86.875
 
 def runSKLearnClassifiers():
+    """
+    Run the SGD, SVM and RF classifiers on the tex-based input
+    """
     xTrain, yTrain, xTest, yTest = [], [], [], []
     for i in x_train:
         xTrain.append(list(i.numpy()))
