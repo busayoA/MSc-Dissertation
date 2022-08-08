@@ -6,6 +6,8 @@ segmentCount = 40 #the number of segments to be used
 segmentationLayer = TreeSegmentationLayer() #the segmentation layer object
 
 def getUnsortedSegmentTrainData(hashed: bool):
+
+    print("\nCollecting unsorted segment training data. This will take a while", end="......")
     """
     Run unsorted segmentation on the training data
 
@@ -24,8 +26,11 @@ def getUnsortedSegmentTrainData(hashed: bool):
     
     x_train_usum, x_train_umean, x_train_umax, x_train_umin, x_train_uprod = [], [], [], [], []
 
+    j = 0
     for i in x_train: #for each tree in the list of trees
-         #duplicate the embedding list into a 40-dimensional version of itself
+        if j % 2 == 0:
+            print(end=".")
+        #duplicate the embedding list into a 40-dimensional version of itself
         i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, 
         i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i]
         i = tf.convert_to_tensor(i)
@@ -55,6 +60,8 @@ def getUnsortedSegmentTrainData(hashed: bool):
         uProd = tf.reshape(uProd, (len(uProd[0]), segmentCount))
         x_train_uprod.append(uProd[0])
 
+        j += 1
+
     # convert the results into tensors for use in the Deep Learning models
     x_train_usum = tf.convert_to_tensor(x_train_usum)
     x_train_umean = tf.convert_to_tensor(x_train_umean)
@@ -78,12 +85,16 @@ def getUnsortedSegmentTestData(hashed):
     x_test_uprod - The results of unsorted product segmentation
     y_test - The class labels
     """
+    print("\nCollecting unsorted segment testing data. This will take a while", end="......")
     x_train, y_train, x_test, y_test = tdp.getData(hashed) # used for when we want to test using hashed data
     y_test = tf.keras.utils.to_categorical(y_test) 
 
     x_test_usum, x_test_umean, x_test_umax, x_test_umin, x_test_uprod = [], [], [], [], []
 
+    j = 0
     for i in x_test:
+        if j % 5 == 0:
+            print(end=".")
         i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i,
         i, i, i, i, i, i,  i, i, i, i, i, i, i, i, i, i]
         i = tf.convert_to_tensor(i)
@@ -108,6 +119,8 @@ def getUnsortedSegmentTestData(hashed):
         uProd = tf.reshape(uProd, (len(uProd[0]), segmentCount))
         x_test_uprod.append(uProd[0])
 
+        j+= 1
+
     x_test_usum = tf.convert_to_tensor(x_test_usum)
     x_test_umean = tf.convert_to_tensor(x_test_umean)
     x_test_umax = tf.convert_to_tensor(x_test_umax)
@@ -131,12 +144,16 @@ def getSortedSegmentTrainData(hashed):
     x_train_prod - The results of sorted product segmentation
     y_train - The class labels
     """
+    print("\nCollecting sorted segment training data. This will take a while", end="......")
     x_train, y_train, x_test, y_test = tdp.getData(hashed)
     y_train = tf.keras.utils.to_categorical(y_train)
 
     x_train_sum, x_train_mean, x_train_max, x_train_min, x_train_prod = [], [], [], [], []
 
+    j = 0
     for i in x_train:
+        if j % 5 == 0:
+            print(end=".")
         i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, 
         i, i, i, i, i, i, i,  i, i, i, i, i, i, i, i, i, i]
         i = tf.convert_to_tensor(i)
@@ -160,6 +177,8 @@ def getSortedSegmentTrainData(hashed):
         uProd = segmentationLayer.segmentationLayer("sorted_prod", i, segmentCount)
         uProd = tf.reshape(uProd, (len(uProd[0]), segmentCount))
         x_train_prod.append(uProd[0])
+
+        j += 1
     
     x_train_sum = tf.convert_to_tensor(x_train_sum)
     x_train_mean = tf.convert_to_tensor(x_train_mean)
@@ -184,11 +203,15 @@ def getSortedSegmentTestData(hashed):
     x_test_prod - The results of sorted product segmentation
     y_test - The class labels
     """
+    print("\nCollecting sorted segment testing data. This will take a while", end="......")
     x_train, y_train, x_test, y_test = tdp.getData(hashed)
     y_test = tf.keras.utils.to_categorical(y_test)
 
     x_test_sum, x_test_mean, x_test_max, x_test_min, x_test_prod = [], [], [], [], []
+    j = 0
     for i in x_test:
+        if j % 5 == 0:
+            print(end=".")
         i = [i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, 
         i, i, i, i, i, i, i, i, i,  i, i, i, i, i, i, i, i, i, i]
         i = tf.convert_to_tensor(i)
@@ -212,6 +235,8 @@ def getSortedSegmentTestData(hashed):
         uProd = segmentationLayer.segmentationLayer("sorted_prod", i, segmentCount)
         uProd = tf.reshape(uProd, (len(uProd[0]), segmentCount))
         x_test_prod.append(uProd[0])
+        
+        j += 1
 
 
     x_test_sum = tf.convert_to_tensor(x_test_sum)

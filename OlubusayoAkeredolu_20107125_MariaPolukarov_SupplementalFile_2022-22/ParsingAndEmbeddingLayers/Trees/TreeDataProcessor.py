@@ -65,21 +65,15 @@ def saveData(train, test):
     train - The training data
     test - The testing data
     """
-    print("\nCollecting training data", end="......")
     x_train, y_train = [], []
     for i in range(len(train)):
-        if i % 2 == 0:
-            print(end=".")
         current = train[i]
         embedding = TreeEmbeddingLayer(current) #embed all the nodes in the current tree
         x_train.append(embedding.vectors) 
         y_train.append(embedding.label)
 
-    print("\nCollecting testing data", end="......")
     x_test, y_test = [], []
     for i in range(len(test)):
-        if i % 5 == 0:
-            print(end=".")
         embedding = TreeEmbeddingLayer(test[i])
         x_test.append(embedding.vectors)
         y_test.append(embedding.label)
@@ -94,22 +88,16 @@ def saveHashData(train, test):
     train - The hashed training data
     test - The hashed testing data
     """
-    print("\nCollecting training data", end="......")
     x_train, y_train = [], []
     for i in range(len(train)):
-        if i % 5 == 0:
-            print(end=".")
         current = train[i]
         tree = current[0].getTreeEmbeddings(current[0]) #get the embedding of each node in the tree
         x_train.append(tree)
         y_train.append(train[i][1])
 
     # Repeat for the testing data
-    print("\nCollecting testing data", end="......")
     x_test, y_test = [], []
     for i in range(len(test)):
-        if i % 5 == 0:
-            print(end=".")
         current = test[i]
         tree = current[0].getTreeEmbeddings(current[0])
         x_test.append(tree)
@@ -201,9 +189,11 @@ def getData(hashed: bool):
     x_test - The formatted contents of the testing data file
     y_test - The formatted contents of the testing data labels file
     """
-    saveHashedFiles()
-    print()
-    saveUnhashedFiles()
+
+    # uncomment these three lines to test hashing/vectorization and saving the results to files
+    # saveHashedFiles()
+    # print()
+    # saveUnhashedFiles()
 
     xTrain, yTrain, xTest, yTest = getFileNames(hashed)
     
